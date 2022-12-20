@@ -1,0 +1,429 @@
+import pandas as pad
+from pcgrl.Agents import *
+from collections import OrderedDict
+from gym import spaces
+from enum import Enum
+from pcgrl.Utils import *
+from pcgrl.PCGRLEnv import PCGRLEnv
+from collections import deque
+
+from pcgrl.callbacks import BasePCGRLCallback
+
+from pcgrl import PCGRLPUZZLE_MAP_PATH
+
+sign = lambda x: math.copysign(1, x)
+
+class Experiment(Enum):
+    
+    AGENT_SS               = "SS"    
+    AGENT_HHP              = "HHP"    
+    AGENT_HHPD             = "HHPD"
+    AGENT_HQHPD            = "HQHPD"            
+    AGENT_HEQHP            = "HEQHP"            
+    AGENT_HEQHPD           = "HEQHPD"            
+    
+    def __str__(self):
+        return self.value         
+
+class BasePCGRLEnv(PCGRLEnv):
+
+    def __init__(self, seed = None, 
+                game = None, factor_reward = 1.0, 
+                piece_size = 8, board = (3, 2), 
+                show_logger = False, save_logger = False, 
+                save_image_level = False, path = ".\Results",
+                rep = None, name = "BasePCGRLEnv",
+                action_change = False,
+                env_rewards = False,
+                path_models = None, callback = BasePCGRLCallback()):
+        
+        self.action_change  = action_change
+        self.agent          = None        
+        self.segment        = 0
+        self.max_segment    = 0
+        self.representation = rep  
+        self.is_render      = False     
+        self.piece_size     = piece_size            
+        self.board = board        
+        self.path_models = path_models
+        super(BasePCGRLEnv, self).__init__(name = name, seed = seed, game = game, save_logger = save_logger, show_logger=show_logger, path=path, callback = callback)                
+        self.factor_reward    =  factor_reward
+        self.reward_game      = 0        
+        self.exp_rpg          = 0.01
+        self.max_exp_rpg      = 0.80        
+        self.experience_inc   = 0.0002
+        self.counter_done     = 0        
+        #self.entropy_min      = 1.80        
+        self.save_image_level = save_image_level                                              
+        self._reward = 0
+        self.reward_best_done_bonus = 50
+        self.reward_medium_done_bonus = 10
+        self.reward_low_done_bonus = 0
+        self.reward_entropy_penalty = 0
+        self._cumulative_reward = 0        
+        self.last_pieces = []        
+        self._last_rewards = 0
+        self.reward_change_penalty = None
+        
+        #obs = round(entropy(np.arange(board[0] * board[1]).reshape(board[1], board[0])), 2)
+        self.max_entropy = calc_entropy(size=board, n_repetead=0) #round(entropy(obs), 2)          
+        self.entropy_min = calc_entropy(n_repetead = 2, size=board)                    
+
+        self.max_segment = 6
+        self.exp = Experiment.AGENT_HHP.value
+        self.current_piece = []
+        self.env_rewards = env_rewards       
+    
+    def create_action_space(self):           
+        path_piece = os.path.join(PCGRLPUZZLE_MAP_PATH, self.path_models)            
+        
+        self.agent  = LevelDesignerAgentBehavior(env = self, 
+                            piece_size=(self.piece_size, self.piece_size), 
+                            rep = self.representation, path_pieces = path_piece, 
+                            action_change=self.action_change)
+
+        self.max_cols_piece = self.agent.max_cols
+        self.max_rows_piece = self.agent.max_rows            
+        self.action_space   = self.agent.action_space
+        self.max_segment = int( self.max_cols_piece * self.max_rows_piece )
+        self._reward_agent  = 0
+        return self.action_space
+                 
+    """
+    def create_action_space(self):
+        self.action_space = None        
+        return self.action_space
+    """
+    def create_observation_space(self):                      
+        width = self.game.get_cols()
+        height = self.game.get_rows()
+        self.observation_space = spaces.Dict({
+            "map": spaces.Box(low=0, high=self.num_tiles-1, dtype=np.uint8, shape=(height, width))
+        })
+        return self.observation_space
+
+    def reset(self): 
+        super().reset()
+        self.segment = 0
+        self.game.reset(self.np_random)                          
+        self.counter_changes   = 0          
+        self.current_stats = self.agent.get_stats()
+        obs = OrderedDict({
+            "map"   : self.game.map.copy()
+        })
+        self._reward = 0
+        self._cumulative_reward = 0
+        self.agent.reset()
+        self.last_pieces = self.agent.grid
+        self.current_piece = []
+        return obs
+
+    def _do_step(self, action):
+        
+        self.old_stats = self.current_stats        
+        
+        self._reward_agent, change, self.current_piece = self.agent.step(action)
+        
+        obs = self.agent.get_current_observation({})
+
+        if change > 0:
+            self.counter_changes += change            
+            self.current_stats = self.agent.get_stats()    
+            self.segment += 1
+
+        return obs
+
+    def  _compute_extra_rewards(self):
+        self.reward_game, rewards_info = self.game.compute_reward(self.current_stats, self.old_stats)                
+
+    def _after_step(self, reward, done):   
+        
+        if self.is_done_success:
+
+            self.game.render_map()
+            self.last_counter_changes = self.counter_changes
+            filename_png = "{}{}-{}.png".format("MapEnvTraining", str(self.counter_done), self.exp)
+            
+            if (self._reward > 0):                                
+                self.counter_done += 1
+                if (not self.path is None):
+                    if self.save_image_level:
+                        path = self.path + "/best/"+filename_png
+                        self.game.save_screen(path)
+            else:
+                self.counter_done += 1
+                if (not self.path is None):
+                    if self.save_image_level:
+                        path = self.path + "/worst/"+filename_png
+                        self.game.save_screen(path)
+
+            if (not self.path is None):
+                if self.save_image_level:                                
+                    df = pad.DataFrame(self.game.map)
+                    if (self._reward > 0):
+                        df.to_csv(self.path + "/map/best/Map"+str(self.counter_done)+".csv", header=False, index=False)
+                    else:
+                        df.to_csv(self.path + "/map/worst/Map"+str(self.counter_done)+".csv", header=False, index=False)
+        
+        self.info["counter_changes"] = self.counter_changes+1
+        self.info["counter_done"]    = self.counter_done
+        self.info["representation"]  = self.representation
+        if self.is_render:
+            self.game.render_map()
+
+    def _get_done(self, actions = None):
+        
+        done_game = self.game.is_done(self.current_stats)
+        self.is_done_success = done_game and self.agent.is_done()
+
+        done = self.is_done_success
+
+        if (self._finished_iterations):
+            self.counter_done_interations += 1
+
+        if (self._finished_changes):
+            self.counter_done_max_changes += 1                                    
+        
+        if (self._finished_changes) and self.use_done_max_changes and not self.is_done_success:
+            done = True            
+            
+        self.info["counter_done_interations"] = self.counter_done_interations
+        self.info["counter_done_max_changes"] = self.counter_done_max_changes
+        self.info["is_done_success"] = self.is_done_success
+        self.info["agent"] = self.agent.get_info()
+
+        if (self.is_done_success):
+            self.last_map = self.game.map            
+            self.last_pieces = self.agent.grid
+        
+        self.info["segments"] = self.agent.grid.flatten()       
+        
+        if (self.is_done_success or done):
+            self.info["entropy"] = entropy(self.agent.grid)
+            self.info["entropy_map"] = entropy(self.game.map)
+            
+        return done
+    
+    @property
+    def _reward_change_entropy_penalty(self):
+        reward = 0
+                        
+        if self.reward_change_penalty is None:
+            reward = self._changes_entropy_penalty * self.factor_reward
+        else:            
+            if (sign(self._changes_entropy_penalty) == 1):
+                reward = -self._changes_entropy_penalty            
+            else:    
+                reward = self.reward_change_penalty * self.factor_reward
+                
+        return reward        
+
+    @property
+    def _reward_entropy_penalty(self):
+        
+        reward = 0
+        
+        if (sign(self.reward_entropy_penalty) == 1):
+            reward = -self.reward_entropy_penalty * self.factor_reward
+        elif (sign(self.reward_entropy_penalty) == 0):
+            reward = -self.max_entropy * self.factor_reward
+        else:
+            reward = self.reward_entropy_penalty * self.factor_reward
+        
+        return reward
+
+    def _calc_reward(self):  
+        
+        reward = 0        
+
+        if (self.exp == Experiment.AGENT_SS.value):            
+            if (not self.is_done_success):
+                if self.reward_change_penalty is None:
+                    reward = self._changes_entropy_penalty * self.factor_reward
+                else:
+                    reward = self.reward_change_penalty  * self.factor_reward
+            else:   
+                reward = self.max_entropy * self.factor_reward
+        elif (self.exp == Experiment.AGENT_HHP.value):
+            if (not self.is_done_success):
+                if self.reward_change_penalty is None:
+                    reward =self._changes_entropy_penalty * self.factor_reward
+                else:
+                    reward = self.reward_change_penalty * self.factor_reward                               
+            else:   
+                reward = entropy(self.agent.grid) * self.factor_reward
+        elif (self.exp == Experiment.AGENT_HHPD.value):            
+            if (not self.is_done_success):
+                if self.reward_change_penalty is None:
+                    reward =self._changes_entropy_penalty * self.factor_reward
+                else:
+                    reward = self.reward_change_penalty  * self.factor_reward
+            else:
+                reward = (entropy(self.agent.grid) + self._done_bonus) * self.factor_reward
+        elif (self.exp == Experiment.AGENT_HEQHP.value):
+            if (not self.is_done_success):
+                if self.reward_change_penalty is None:
+                    reward = self._changes_entropy_penalty * self.factor_reward
+                else:
+                    reward = self.reward_change_penalty * self.factor_reward
+            else:          
+                e = entropy(self.agent.grid)
+                r = (e**math.pi - self.entropy_min**math.pi)                
+                f = 1                                                                                                                                                                                                 
+                reward = (((r + sign(r)) * f)) * self.factor_reward                    
+        elif (self.exp == Experiment.AGENT_HEQHPD.value):
+            if (not self.is_done_success):
+                if self.reward_change_penalty is None:
+                    reward = self._changes_entropy_penalty * self.factor_reward
+                else:
+                    reward = self.reward_change_penalty * self.factor_reward
+            else:          
+                e = entropy(self.agent.grid)
+                r = (e**math.pi - self.entropy_min**math.pi)
+                f = 1.0
+                reward = (((r + sign(r)) * f) + self._done_bonus) * self.factor_reward
+
+        if (self.env_rewards):
+            self._compute_extra_rewards()
+            reward += self.reward_game
+
+        print("Reward: ", reward)   
+        print("Max Entropy", self.max_entropy)     
+        print("Min Entropy", self.entropy_min)     
+        print("Entropy", entropy(self.agent.grid))
+        print("Pieces: ", self.agent.grid)
+        print("Action change: ", self.action_change)
+        print("Changes: ", self.counter_changes)
+        print("Piece Penalty: ", self._segment_penalty)                                                            
+        self.info["reward_game"] = self.reward_game
+        self.info["reward"] = reward        
+        self.info["bonus_factor"] = self._bonus_factor
+        exp = self._experience_bonus
+        self.info["experience_bonus"] = exp
+        self.info["reward_experience_bonus"] = exp * reward
+        self.info["done_bonus"] = self._done_bonus        
+        #self.info["changes_penalty"] = self._changes_penalty
+        self.info["piece_penalty"] = self._segment_penalty
+                
+        self.hist['rewards'].append(reward)
+                
+        if (self.is_done_success):
+            discount_rewards = self.discount_rewards(self.hist['rewards'], discount_rate = 0.99)
+            self.info['discount_rewards'] = discount_rewards.mean()
+                                
+        self.add_reward(reward)
+
+        return reward 
+    
+    def scale_action(self, raw_action, min, max):
+        """[summary]
+        Args:
+            raw_action ([float]): [The input action value]
+            min ([float]): [minimum value]
+            max ([flaot]): [maximum value]
+        Returns:
+            [type]: [description]
+        """
+        middle = (min + max) / 2
+        range = (max - min) / 2
+        return raw_action * range + middle
+
+    def set_reward(self, reward):             
+        """            
+            Function used to replace rewards that agent earn during the current step
+        Args:
+            reward ([type float]): [New value of reward]
+        """
+        self._cumulative_reward += (reward - self._reward)
+        self._reward = reward
+                       
+    def add_reward(self, reward):
+        """[summary]
+        Increments the rewards        
+        Args:
+            reward ([float]): [Value reward to increment]
+        """
+        self._cumulative_reward += reward
+        self._reward += reward
+
+    @property
+    def _finished_segments(self):
+        return self.segment >= self.max_segment
+
+    @property
+    def _segment_penalty(self):        
+        r = 0
+        """
+        c = 0                                
+        for p in range(len(self.agent.pieces)-1):
+            js = js_divergence(self.agent.pieces[p], self.current_piece)        
+            if (js <= 0):            
+                c += 1
+
+        if (c > 0):
+            a = self.max_segment
+            b = c + 1 + self.entropy_min
+            r = -(1 / math.sqrt( a / b ) * b )
+        else:
+            r = 0
+        """    
+        return r    
+    
+    @property
+    def _experience_bonus(self):
+        """Return the experience bonus earned to multiple the reward earned."""
+        bonus = 1.0 
+        if (self.exp_rpg < self.max_exp_rpg) and (self.is_done_success):
+            self.exp_rpg += self.experience_inc
+        bonus = (1 + self.exp_rpg)
+        return bonus
+    """
+    @property
+    def _changes_penalty(self):
+        Return the reward for changes.
+        _reward = (self.counter_changes / self.max_changes)                        
+        return -_reward    
+    """
+
+    @property
+    def _changes_entropy_penalty(self):
+        """Return the reward for changes."""        
+        _reward = (self.max_entropy / self.max_changes)        
+        return -_reward
+            
+    @property
+    def _bonus_factor(self):
+        """Return the bonus factor earned to multiple the reward earned."""
+        bonus = 1.0
+        total_pieces = min( ( (self.max_cols_piece * self.max_rows_piece) * 2) + 5, self.max_changes)
+        if self.is_done_success and self.counter_changes <= total_pieces:
+            bonus = 1 / math.sqrt((self.counter_changes / self.max_changes))
+        return bonus
+        
+    @property
+    def _done_bonus(self):
+        """Return the reward earned by done if not goal objective."""
+        r = 0.0
+        #total_pieces = min( ((self.max_cols_piece * self.max_rows_piece) * 2) + 5, self.max_changes)
+        if self.is_done_success: #and self.counter_changes <= total_pieces:            
+            e = round(entropy(self.agent.grid), 2)
+            if e >= self.max_entropy:
+                r += self.reward_best_done_bonus
+            elif e >= self.entropy_min:
+                r += self.reward_medium_done_bonus
+            else:
+                r += self.reward_low_done_bonus
+                                 
+        return r   
+    
+    def _entropy_distance(self, m, w = 0.5):
+        """Calculate the value that measure de penalty of entropy 
+
+        Args:
+            m (_type_): The value of entropy
+            w (float, optional): _description_. Defaults to 0.5.
+
+        Returns:
+            _type_: _description_
+        """
+        return (math.pi / (m + w) ) * self.entropy_min

@@ -1,0 +1,13 @@
+Representation,Observation,Total
+puzzle,ONEHOT,20
+puzzle,map,15
+puzzle,RGB,18
+wide-puzzle,ONEHOT,11
+wide-puzzle,map,11
+wide-puzzle,RGB,14
+multi-piece,ONEHOT,26
+multi-piece,map,31
+multi-piece,RGB,29
+wide,ONEHOT,0
+wide,map,0
+wide,RGB,0

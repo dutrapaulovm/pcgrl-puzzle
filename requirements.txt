@@ -1,0 +1,9 @@
+stable-baselines3
+matplotlib
+tqdm
+pandas
+gym
+scikit-learn
+scikit-image
+scipy
+statsmodels
