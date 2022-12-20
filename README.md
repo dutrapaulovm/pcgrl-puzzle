@@ -1,5 +1,8 @@
 # PCGRL-PUZZLE
- Projeto utilizando Gym Open AI para aprendizado por reforço
+ 
+ Project to [OpenAI GYM](https://gym.openai.com/) for Procedural Content Generation using Reinforcement Learning
+
+The initial results is covered in the paper: [Procedural Content Generation using Reinforcement  Learning and Entropy Measure as Feedback](https://doi.org/10.1109/SBGAMES56371.2022.9961076)
 
 ## Python packages
 

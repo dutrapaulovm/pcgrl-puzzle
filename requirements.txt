@@ -1,9 +1,11 @@
 stable-baselines3
+sb3-contrib
+pygame
 matplotlib
 tqdm
 pandas
 gym
-scikit-learn
-scikit-image
-scipy
-statsmodels
+ipython
+opencv-python
+imageio
+pandas
