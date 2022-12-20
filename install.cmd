@@ -11,8 +11,6 @@ pip install opencv-python
 pip install imageio
 pip install pandas
 
-
-
 #python -m pip install dist/pcgrl-0.0.70.10-py3-none-any.whl
 
 pip install -r requirements.txt

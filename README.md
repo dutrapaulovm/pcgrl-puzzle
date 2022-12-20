@@ -1,4 +1,4 @@
-# PCGRL
+# PCGRL-PUZZLE
  Projeto utilizando Gym Open AI para aprendizado por reforço
 
 ## Python packages
@@ -15,25 +15,19 @@ To install the base Gym library, use `pip install gym`.
 ## Running 
 Another way is to use [Conda](https://www.anaconda.com/) by creating a virtual environment then activating it and installing all the dependencies
 ```sh
-conda create --name pcgrl
-conda activate pcgrl
-pip install tensorflow==1.15
-pip install stable-baselines==2.9.0
-cd gym_pcgrl
+conda create --name pcgrl-puzzle
+conda activate pcgrl-puzzle
+pip install gym
+pip install stable-baselines3
+pip install sb3-contrib
+pip install pygame==2.0.0 
+pip install ipython
+pip install opencv-python
+pip install imageio
+pip install pandas
+cd pcgrl-puzzle
 pip install -e .
-cd ..
-python train.py
 ```
-Lastly, you can just install directly without using any virtual environment:
-```sh
-pip install tensorflow==1.15
-pip install stable-baselines==2.9.0
-cd gym_pcgrl
-pip install -e .
-cd ..
-python train.py
-```
-
 
 ## Wrappers
 
