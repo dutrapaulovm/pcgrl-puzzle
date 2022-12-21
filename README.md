@@ -43,8 +43,7 @@ import pcgrl
 
 ## Included Environments
 
-The environments listed below are implemented in the [pcgrl-puzzle](/pcgrl-puzzle) directory.
-Each environment provides one or more configurations registered with OpenAI gym. 
+The environments listed below are implemented in the [pcgrl-puzzle](/pcgrl-puzzle) directory and are registered with OpenAI gym.
 
 ### Default environments
 
