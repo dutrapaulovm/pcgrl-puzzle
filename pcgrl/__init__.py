@@ -63,7 +63,7 @@ from gym.envs.registration import register
 
 
 register(
-    id='mazecoin-narrow-puzzle-v0',
+    id='mazecoin-narrow-puzzle-2x3-v0',
     entry_point='pcgrl.mazecoin.MazeCoinLowMapsEnv:MazeCoinLowMapsEnv',
     kwargs={"seed" : 42,    
             "rep" : Behaviors.NARROW_PUZZLE.value,
@@ -82,7 +82,7 @@ register(
 )
 
 register(
-    id='mazecoin-narrow-puzzle-v1',
+    id='mazecoin-narrow-puzzle-2x3-v1',
     entry_point='pcgrl.mazecoin.MazeCoinLowMapsEnv:MazeCoinLowMapsEnv',
     kwargs={"seed" : 42,
             "rep" : Behaviors.NARROW_PUZZLE.value,
@@ -101,7 +101,7 @@ register(
 )
 
 register(
-    id='dungeon-narrow-puzzle-v0',
+    id='dungeon-narrow-puzzle-2x3-v0',
     entry_point='pcgrl.dungeon.DungeonEnv:DungeonEnv',
         kwargs={"seed" : 42,
             "rep" : Behaviors.NARROW_PUZZLE.value,
@@ -119,7 +119,7 @@ register(
 )
 
 register(
-    id='zelda-narrow-puzzle-v0',
+    id='zelda-narrow-puzzle-2x3-v0',
     entry_point='pcgrl.zelda.ZeldaEnv:ZeldaEnv',
     kwargs={"seed" : 42,
             "rep" : Behaviors.NARROW_PUZZLE.value,
@@ -133,42 +133,6 @@ register(
             "agent" : Experiment.AGENT_HEQHP.value,
             "reward_change_penalty" : -1,            
             "board" : (3, 2),
-            "piece_size" : 8}
-)
-
-register(
-    id='smb-narrow-puzzle-v0',
-    entry_point='pcgrl.smb.SMBEnv:SMBEnv',
-    kwargs={"seed" : 42,
-            "rep" : Behaviors.NARROW_PUZZLE.value,
-            "path" : None,
-            "save_logger" : True,
-            "save_image_level" : False,
-            "show_logger" : False,
-            "rendered" : True,
-            "action_change" : False,
-            "action_rotate" : False,
-            "agent" : Experiment.AGENT_HEQHP.value,
-            "reward_change_penalty" : -1,            
-            "board" : (3, 2),
-            "piece_size" : 8}
-)
-
-register(
-    id='minimap-narrow-puzzle-v0',
-    entry_point='pcgrl.minimap.MiniMapLowMapsEnv:MiniMapLowMapsEnv',
-    kwargs={"seed" : 42,
-            "rep"  : Behaviors.NARROW_PUZZLE.value,
-            "path" : "D:\Results",
-            "save_logger"      : True,
-            "save_image_level" : True,
-            "show_logger"      : False,
-            "rendered"         : True,
-            "action_change"    : False,
-            "action_rotate"    : False,
-            "agent" : Experiment.AGENT_HEQHP.value,
-            "reward_change_penalty" : -1,            
-            "board" : (4, 2),
             "piece_size" : 8}
 )
 

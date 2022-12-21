@@ -12,8 +12,8 @@ To install the required python packages, run
 `python -m pip install -r requirements.txt`
 
 ## Installation
-
-To install the base Gym library, use `pip install gym`.
+1. Clone this repository to your local machine.
+2. To install the package, `run pip install -e .` from the repository folder. The OpenAI GYM environment, Stable Baselines3 and SB3 Contrib will install automatically. 
 
 ## Running 
 Another way is to use [Conda](https://www.anaconda.com/) by creating a virtual environment then activating it and installing all the dependencies
@@ -25,9 +25,30 @@ pip install stable-baselines3
 pip install sb3-contrib
 pip install pygame==2.0.0 
 pip install ipython
-pip install opencv-python
+pip install opencv-py thon
 pip install imageio
 pip install pandas
 cd pcgrl-puzzle
 pip install -e .
 ```
+## How to use
+
+PCGRL-PUZZLE has some registered environments
+```python
+from gym import envs
+import pcgrl
+
+[env.id for env in envs.registry.all() if "pcgrl-puzzle" in env.entry_point]
+```
+
+## Included Environments
+
+The environments listed below are implemented in the [pcgrl-puzzle](/pcgrl-puzzle) directory.
+Each environment provides one or more configurations registered with OpenAI gym. 
+
+### Default environments
+
+1. 'mazecoin-narrow-puzzle-2x3-v0' 
+2. 'mazecoin-narrow-puzzle-2x3-v1', 
+3. 'dungeon-narrow-puzzle-2x3-v0' 
+4. 'zelda-narrow-puzzle-2x3-v0'

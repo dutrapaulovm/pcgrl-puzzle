@@ -6,9 +6,9 @@ from setuptools import find_packages
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "pcgrl"))
 
-setup(name='pcgrl',
+setup(name='pcgrl-puzzle',
     version='0.0.80.0',
-    install_requires=['gym', 'stable-baselines3'],
+    install_requires=['gym', 'stable-baselines3', 'sb3-contrib'],
     author="Paulo Vinícius Moreira Dutra",
     author_email="paulo.dutra@ifsudestemg.edu.br",
     description="A package for \"Procedural Content Generation via Reinforcement Learning\" OpenAI Gym interface.",
@@ -19,7 +19,7 @@ setup(name='pcgrl',
         'Reinforcement-Learning-Environment',
     ]),    
     project_urls={
-        "Bug Tracker": "https://github.com/paulovmdutra/PCGRLPUZZLE/issues",
+        "Bug Tracker": "hhttps://github.com/dutrapaulovm/pcgrl-puzzle/issues",
     },
     packages=[package for package in find_packages() if package.startswith("pcgrl")],    
     classifiers=[
