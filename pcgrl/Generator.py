@@ -187,11 +187,11 @@ class Generator:
             if rotate_direction == 0:
                 piece = np.rot90(piece)
             if rotate_direction == 1:
-                piece = np.rot90(piece)                
-                piece = np.rot90(piece)                
+                piece = np.rot90(piece)
+                piece = np.rot90(piece)
             if rotate_direction == 2:
-                piece = np.rot90(piece)                
-                piece = np.rot90(piece)                                
+                piece = np.rot90(piece)
+                piece = np.rot90(piece)
                 piece = np.rot90(piece)
 
         self.max_cols = int(map.shape[1] / self.piece_w)        
