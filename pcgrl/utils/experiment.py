@@ -5,7 +5,6 @@ from uuid import uuid4
 from collections import OrderedDict
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
-import pcgrl
 from pcgrl import *
 from pcgrl.Agents import *
 from pcgrl.BasePCGRLEnv import Experiment
@@ -254,6 +253,7 @@ class ExperimentManager(object):
             entropy_min:int = 1.80,
             max_changes:int = 61,
             action_change:bool = False,
+            action_rotate:bool = False,
             factor_reward:float = 1.0,
             reward_best_done_bonus:float = 50,
             reward_medium_done_bonus:float = 10,
@@ -311,6 +311,7 @@ class ExperimentManager(object):
         self.factor_reward = factor_reward
         self.board = board
         self.action_change = action_change
+        self.action_rotate = action_rotate
         self.piece_size = piece_size
         self.env_rewards = env_rewards        
 
@@ -319,6 +320,7 @@ class ExperimentManager(object):
                         show_logger      = False,
                         show_hud         = False,
                         action_change    = False,
+                        action_rotate    = False,
                         path_experiments = None,
                         agent            = None,
                         render           = False,
@@ -333,23 +335,24 @@ class ExperimentManager(object):
                   "save_image_level" : save_image_level,
                   "show_logger" : show_logger,
                   "action_change" : action_change,
+                  "action_rotate" : action_rotate,
                   "board" : self.board,
                   "piece_size" : self.piece_size}        
         
         if name_game == Game.MAZE.value:                         
-            singleEnv = MazeEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, board = self.board, piece_size = self.piece_size, env_rewards = self.env_rewards)
+            singleEnv = MazeEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size, env_rewards = self.env_rewards)
         elif name_game == Game.MAZECOIN.value:                         
-            singleEnv = MazeCoinEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)                                  
+            singleEnv = MazeCoinEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)                                  
         elif name_game == Game.MAZECOINLOWMAPS.value:                         
-            singleEnv = MazeCoinLowMapsEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, board = self.board, piece_size = self.piece_size, env_rewards = self.env_rewards)                     
+            singleEnv = MazeCoinLowMapsEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size, env_rewards = self.env_rewards)                     
         elif name_game == Game.DUNGEON.value:             
-            singleEnv = DungeonEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)      
+            singleEnv = DungeonEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)      
         elif name_game == Game.ZELDA.value:             
-            singleEnv = ZeldaEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)
+            singleEnv = ZeldaEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)
         elif name_game == Game.MINIMAP.value:             
-            singleEnv = MiniMapEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)      
+            singleEnv = MiniMapEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)      
         elif name_game == Game.MINIMAPLOWMODELS.value:             
-            singleEnv = MiniMapLowMapsEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)       
+            singleEnv = MiniMapLowMapsEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)       
         elif name_game == Game.SMB.value:             
             singleEnv = SMBEnv(seed = self.seed, 
                                rep  = representation, 
@@ -565,6 +568,7 @@ class ExperimentManager(object):
                                                                 observation = observation,
                                                                 agent = agent,
                                                                 action_change=self.action_change,
+                                                                action_rotate=self.action_rotate,
                                                                 save_image_level=save_image_level,
                                                                 show_hud=show_hud, 
                                                                 render = render,                                                               
@@ -799,6 +803,7 @@ class ExperimentManager(object):
                                                 observation = observation,
                                                 agent = agent,
                                                 action_change=self.action_change,
+                                                action_rotate=self.action_rotate,
                                                 save_image_level=save_image_level,
                                                 show_hud=show_hud, 
                                                 render = render,                                                  
@@ -955,28 +960,24 @@ if __name__ == '__main__':
     path_results = "F:\Experimentos\Results-new-Factor10"
     seeds = [42]  
     uuid = "-{}-{}".format(max_changes,board)
-    factor_reward = 10
+    factor_reward = 1
     render        = False
     show_hud      = False
     record_video  = False
-    action_change = False        
-    env_rewards   = False    
+    action_change = False
+    action_rotate = False
+    env_rewards   = False
     save_level    = False
     piece_size    = 8
-    
-    #policy_kwargs = dict(
-    #    features_extractor_class=CustomCNN,
-    #    features_extractor_kwargs=dict(features_dim=512),
-    #)     
-    #policy_kwargs = dict(net_arch = [64, 64], activation_fn=th.nn.Sigmoid)
-    #policy = 'CnnPolicy' #"MlpPolicy"
+
+    policy_kwargs = dict(net_arch = [64, 64], activation_fn=th.nn.Sigmoid)
 
 
     for seed in seeds:
         representations = [Behaviors.NARROW_PUZZLE.value]
         observations = [WrappersType.SEGMENT.value]                
-        envs = [Game.DUNGEON.value, Game.MAZECOINLOWMAPS.value, Game.ZELDA.value]          
-        #envs = [Game.MINIMAPLOWMODELS.value]
+        #envs = [Game.DUNGEON.value, Game.MAZECOINLOWMAPS.value, Game.ZELDA.value]          
+        envs = [Game.ZELDA.value]          
         agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value]
         
         for a in agents:
@@ -998,6 +999,7 @@ if __name__ == '__main__':
                                                     piece_size = piece_size,
                                                     factor_reward = factor_reward,
                                                     action_change=action_change,
+                                                    action_rotate=action_rotate,
                                                     max_changes=max_changes,
                                                     env_rewards = env_rewards,                                                    
                                                     gamma = gamma, act_func=act_func, rl_algo = rl_algo, 
@@ -1021,6 +1023,7 @@ if __name__ == '__main__':
                                                     entropy_min = entropy_min,  
                                                     piece_size = piece_size,
                                                     action_change=action_change,   
+                                                    action_rotate=action_rotate,
                                                     max_changes=max_changes,                                                                
                                                     env_rewards = env_rewards,
                                                     total_timesteps = total_timesteps, 

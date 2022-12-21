@@ -14,7 +14,7 @@ MAP_PATH = os.path.dirname(__file__) + "/maps/mapbuilder"
 
 class Generator:    
     
-    def __init__(self, seed = None, path = MAP_PATH, piece_size = (4, 4), dim = (256, 256), n_models = -1):
+    def __init__(self, seed = None, path = MAP_PATH, piece_size = (4, 4), loadmap = False, border = True):
         
         """
             Generator used to load models        
@@ -32,14 +32,18 @@ class Generator:
         self.pieces       = []
         self.max_cols     = 0
         self.max_rows     = 0
+        self.map          = np.zeros(piece_size)
 
         self.pos_row  = 0
         self.pos_col  = 0 
         self.curr_row = 0
-        self.curr_col = 0
-        self.n_models = n_models
+        self.curr_col = 0        
                 
-        self.load_pieces()
+        self.border = border    
+        if not loadmap:
+            self.load_pieces() 
+        else:
+            self.load_map()    
         
         self.action_space = spaces.Discrete( len(self.pieces) )   
         self.action_space.seed(seed=seed)                      
@@ -57,7 +61,45 @@ class Generator:
      
     def random_piece(self):
         action = self.action_space.sample()
-        return self.get_piece(action)                       
+        return self.get_piece(action)         
+
+    def load_map(self):
+
+        dt = None
+        with open(self.path) as fc:
+            creader = csv.reader(fc) # add settings as needed
+            dt = [r for r in creader]                
+        dt = np.array(dt, dtype="int")
+
+        self.map = dt
+        
+        max_rows, max_cols = int(dt.shape[0] / self.piece_h), int(dt.shape[1] / self.piece_w)
+        
+        if (self.border):
+            max_rows, max_cols = int((dt.shape[0] - 2) / self.piece_h), int((dt.shape[1] - 2) / self.piece_w)
+        
+        pos_row, pos_col   = 0, 0
+        if (self.border):
+            pos_row, pos_col   = 1, 1
+            #max_rows, max_cols = max_rows, max_rows
+
+        curr_col           = 0
+        curr_row           = 0
+        #print(max_rows, max_cols)
+        for x in range(max_cols * max_rows):                                    
+
+            piece = np.zeros( (self.piece_h , self.piece_w))     
+            
+            for ay in range(piece.shape[0]):
+                for ax in range(piece.shape[1]):                     
+                    tile = int(dt[(pos_row+ay)][(pos_col+ax)])                
+                    piece[ay][ax] = int(tile)            
+            #print(piece)            
+            #time.sleep(5)
+            #print()
+            self.pieces.append(piece)           
+
+            pos_row, pos_col, curr_row, curr_col = self.next(pos_row, pos_col, max_cols, max_rows, curr_col, curr_row)                                                                       
     
     def load_pieces(self):
         #start = timer()
@@ -70,7 +112,7 @@ class Generator:
                 with open(pathfile) as fc:
                     creader = csv.reader(fc) # add settings as needed
                     dt = [r for r in creader]                
-                dt = np.array(dt)
+                dt = np.array(dt, dtype="int")
                 max_rows, max_cols = int(dt.shape[0] / self.piece_h), int(dt.shape[1] / self.piece_w)
                 pos_row, pos_col   = 0, 0
                 curr_col           = 0
@@ -138,8 +180,12 @@ class Generator:
         
         return map, piece
     
-    def build_map(self, map, piece,  offset = (0, 0)):
+    def build_map(self, map, piece,  offset = (0, 0), rotate = False):
         piece = self.get_piece(piece)
+
+        if (rotate):
+            piece = np.rot90(piece)
+
         self.max_cols = int(map.shape[1] / self.piece_w)        
         self.max_rows = int(map.shape[0] / self.piece_h)        
         max_col, max_row  = piece.shape
@@ -175,3 +221,6 @@ class Generator:
     
     def step(action):
         return []
+
+    def count(self):
+        return len(self.pieces)        

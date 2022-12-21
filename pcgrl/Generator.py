@@ -180,11 +180,19 @@ class Generator:
         
         return map, piece
     
-    def build_map(self, map, piece,  offset = (0, 0), rotate = False):
+    def build_map(self, map, piece,  offset = (0, 0), rotate = False, rotate_direction = 0):
         piece = self.get_piece(piece)
 
         if (rotate):
-            piece = np.rot90(piece)
+            if rotate_direction == 0:
+                piece = np.rot90(piece)
+            if rotate_direction == 1:
+                piece = np.rot90(piece)                
+                piece = np.rot90(piece)                
+            if rotate_direction == 2:
+                piece = np.rot90(piece)                
+                piece = np.rot90(piece)                                
+                piece = np.rot90(piece)
 
         self.max_cols = int(map.shape[1] / self.piece_w)        
         self.max_rows = int(map.shape[0] / self.piece_h)        

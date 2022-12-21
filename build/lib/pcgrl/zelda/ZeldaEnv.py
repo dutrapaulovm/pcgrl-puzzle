@@ -13,7 +13,11 @@ class ZeldaEnv(BasePCGRLEnv):
                  save_image_level = False, 
                  path = "", 
                  rep = None, 
+                 rendered = False,
                  action_change = False, 
+                 action_rotate = False,
+                 agent = None,
+                 reward_change_penalty = None,                 
                  piece_size = 8, 
                  board = (3, 2), 
                  path_models = "zelda/",
@@ -21,20 +25,25 @@ class ZeldaEnv(BasePCGRLEnv):
                  callback = BasePCGRLCallback()):        
         
         self.rep = rep
-        self.cols = board[0] * min(8, piece_size * 2) #Col
-        self.rows = board[1] * min(8, piece_size * 2) #Row        
+        self.cols = board[0] * min(piece_size, piece_size * 2) #Col
+        self.rows = board[1] * min(piece_size, piece_size * 2) #Row               
         game = ZeldaGameProblem(cols = self.cols, rows = self.rows, border = True)
         game.scale = 2            
         self.action_change = action_change
-        
+        self.action_rotate = action_rotate        
         super(ZeldaEnv, self).__init__(seed = seed, game = game, 
-                                       env_rewards=env_rewards,
+                                       env_rewards = env_rewards,
                                        save_image_level = save_image_level,
-                                        save_logger=save_logger, 
-                                        show_logger=show_logger, rep=rep,
-                                         path=path, piece_size = piece_size, 
-                                         board = board,
-                                          path_models = path_models, callback = callback)
+                                       action_change = action_change,
+                                       action_rotate = action_rotate,                                          
+                                       reward_change_penalty = reward_change_penalty,
+                                       agent = agent,
+                                       rendered = False,
+                                       save_logger = save_logger, 
+                                       show_logger = show_logger, rep=rep,
+                                       path = path, piece_size = piece_size, 
+                                       board = board,
+                                       path_models = path_models, callback = callback)
         self.current_reward   = 0
         self.counter_done     = 0        
         self.info = {}         

@@ -10,7 +10,7 @@ import csv
 
 class MazeCoinGameProblem(GameProblem):    
 
-    def __init__(self, rows = 0, cols = 0, border = False, tile_size = 64):
+    def __init__(self, rows = 0, cols = 0, border = False, tile_size = TILE_SIZE):
 
         self.border = border
         self.tile_size = tile_size
@@ -30,7 +30,7 @@ class MazeCoinGameProblem(GameProblem):
             self.width = 16 * self.tile_size
             self.height = 8 * self.tile_size        
         
-        super().__init__(w = self.width, h = self.height, tile_w = self.tile_size, tile_h = self.tile_size)            
+        super(MazeCoinGameProblem, self).__init__(w = self.width, h = self.height, tile_w = self.tile_size, tile_h = self.tile_size)            
         self.show_hud = False
         self.fntHUD      = pygame.font.Font('freesansbold.ttf', 24)     
         self.fntSmallHUD = pygame.font.Font('freesansbold.ttf', 16)
@@ -51,12 +51,7 @@ class MazeCoinGameProblem(GameProblem):
                 self.addBackground_first(ground)         
         
         self.tiles = ["Ground", "Block", "CoinGold", "Player"]
-        self.dic_tiles = convert_strarray_to_dic(self.tiles)
-        """
-        for i in range(len(self.tiles)):
-            tile = self.tiles[i]
-            self.dic_tiles[tile] = i                       
-        """       
+        self.dic_tiles = convert_strarray_to_dic(self.tiles)         
                 
         self._range_coins = {"min" : 1, "max" : 2}
 
@@ -82,7 +77,7 @@ class MazeCoinGameProblem(GameProblem):
         reward = self.player.step(action)                                                  
         
         if len(self.levelObjects.sprites()) == 0:
-            return 500, True
+            return 20, True
 
         return reward, False
 
@@ -130,17 +125,19 @@ class MazeCoinGameProblem(GameProblem):
         self.map = data
         self.clear()
         self.__create()
-        
+
+    def render_map(self):
+        self.__create()
+        self.render(tick=0)  
+
     def create_map(self, data):    
         self.map = data
         if not self.blocked:
             self.__create()  
             
-    def render_map(self):
-        self.__create()
-        self.render(tick=0)            
-            
-    def update_map(self):
+    def update_map(self, data = None):
+        if (not data is None):
+            self.map = data
         self.clear()
         self.__create() 
 
@@ -240,18 +237,15 @@ class MazeCoinGameProblem(GameProblem):
         
         for row in range(self.get_rows()):
             for col in range(self.get_cols()):                
-                val = self.map[row, col]
-                #if val == Ground.ID:
-                #    tile  = Ground(id =Ground.ID, x = col * state_w, y = row * state_h)                    
-                #    self.addBackground(tile)                   
+                val = self.map[row, col]                  
                 if val == Block.ID:
                     tile  = Block(id =Block.ID, x = col * state_w, y = row * state_h, tile_height=self.tile_size, tile_width=self.tile_size)                    
                     self.addBases(tile)                                            
                 if val == CoinGold.ID:
-                    tile  = CoinGold(id =CoinGold.ID, x = col * state_w, y = row * state_h, tile_height=self.tile_size, tile_width=self.tile_size)                    
+                    tile  = CoinGold(id = CoinGold.ID, x = col * state_w, y = row * state_h, tile_height=self.tile_size, tile_width=self.tile_size)                    
                     self.addLevelObjects(tile)                     
                 if val == Player.ID:
-                    tile  = Player(id =Player.ID, x = col * state_w, y = row * state_h, tile_height=self.tile_size, tile_width=self.tile_size) 
+                    tile  = Player(id = Player.ID, x = col * state_w, y = row * state_h, tile_height=self.tile_size, tile_width=self.tile_size) 
                     self.player = tile                   
                     self.addPlayers(tile)                                                                
         

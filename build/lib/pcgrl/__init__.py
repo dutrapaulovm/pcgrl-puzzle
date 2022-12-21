@@ -18,6 +18,7 @@ from pcgrl import Agents
 from pcgrl import Entity
 from pcgrl import log
 
+from pcgrl.BasePCGRLEnv import Experiment
 from pcgrl.minimap.MiniMapGameProblem import MiniMapGameProblem
 from pcgrl.minimap.MiniMapEnv import MiniMapEnv
 from pcgrl.minimap.MiniMapLowMapsEnv import MiniMapLowMapsEnv
@@ -60,68 +61,84 @@ from pcgrl.wrappers import make_env
 
 from gym.envs.registration import register
 
-register(
-    id='maze-narrow-puzzle-v0',
-    entry_point='pcgrl.maze.MazeEnv:MazeEnv',
-    kwargs={"seed" : 42,
-            "rep" : Behaviors.NARROW_PUZZLE.value,
-            "path" : None,
-            "save_logger" : True,
-            "save_image_level" : False,
-            "show_logger" : False,
-            "action_change" : False,
-            "env_rewards" : False,
-            "board" : (3,2),
-            "piece_size" : 8,
-            "path_models" : "mazev2/"}
-)
 
 register(
-    id='mazecoin-narrow-puzzle-v0',
-    entry_point='pcgrl.mazecoin.MazeCoinEnv:MazeCoinEnv',
-    kwargs={"seed" : 42,
+    id='mazecoin-narrow-puzzle-2x3-v0',
+    entry_point='pcgrl.mazecoin.MazeCoinLowMapsEnv:MazeCoinLowMapsEnv',
+    kwargs={"seed" : 42,    
             "rep" : Behaviors.NARROW_PUZZLE.value,
             "path" : None,
-            "save_logger" : True,
+            "save_logger" : False,
             "save_image_level" : False,
             "show_logger" : False,
+            "rendered" : True,
             "action_change" : False,
-            "board" : (3,2),
-            "piece_size" : 8,
-            "path_models" : "mazecoin/"}
-)
-
-register(
-    id='mazecoin-narrow-puzzle-v1',
-    entry_point='pcgrl.mazecoin.MazeCoinEnv:MazeCoinEnv',
-    kwargs={"seed" : 42,
-            "rep" : Behaviors.NARROW_PUZZLE.value,
-            "path" : None,
-            "save_logger" : True,
-            "save_image_level" : False,
-            "show_logger" : False,
-            "action_change" : False,
-            "board" : (3,2),
+            "action_rotate" : False,
+            "agent" : Experiment.AGENT_HEQHP.value,
+            "reward_change_penalty" : -1,            
+            "board" : (3, 2),
             "piece_size" : 8,
             "path_models" : "mazecoin-lowmodels/"}
 )
 
 register(
-    id='dungeon-narrow-puzzle-v0',
-    entry_point='pcgrl.dungeon.DungeonEnv:DungeonEnv',
+    id='mazecoin-narrow-puzzle-2x3-v1',
+    entry_point='pcgrl.mazecoin.MazeCoinLowMapsEnv:MazeCoinLowMapsEnv',
     kwargs={"seed" : 42,
+            "rep" : Behaviors.NARROW_PUZZLE.value,
+            "path" : None,
+            "save_logger" : False,
+            "save_image_level" : False,
+            "show_logger" : False,
+            "rendered" : True,
+            "action_change" : True,
+            "action_rotate" : False,
+            "agent" : Experiment.AGENT_HEQHP.value,
+            "reward_change_penalty" : -1,            
+            "board" : (3, 2),
+            "piece_size" : 8,
+            "path_models" : "mazecoin-lowmodels/"}
+)
+
+register(
+    id='mazecoin-narrow-puzzle-2x3-v2',
+    entry_point='pcgrl.mazecoin.MazeCoinLowMapsEnv:MazeCoinLowMapsEnv',
+    kwargs={"seed" : 42,
+            "rep" : Behaviors.NARROW_PUZZLE.value,
+            "path" : None,
+            "save_logger" : False,
+            "save_image_level" : False,
+            "show_logger" : False,
+            "rendered" : True,
+            "action_change" : True,
+            "action_rotate" : True,
+            "agent" : Experiment.AGENT_HEQHP.value,
+            "reward_change_penalty" : -1,            
+            "board" : (3, 2),
+            "piece_size" : 8,
+            "path_models" : "mazecoin-lowmodels/"}
+)
+
+register(
+    id='dungeon-narrow-puzzle-2x3-v0',
+    entry_point='pcgrl.dungeon.DungeonEnv:DungeonEnv',
+        kwargs={"seed" : 42,
             "rep" : Behaviors.NARROW_PUZZLE.value,
             "path" : None,
             "save_logger" : True,
             "save_image_level" : False,
             "show_logger" : False,
+            "rendered" : True,
             "action_change" : False,
-            "board" : (3,2),
+            "action_rotate" : False,
+            "agent" : Experiment.AGENT_HEQHP.value,
+            "reward_change_penalty" : -1,            
+            "board" : (3, 2),
             "piece_size" : 8}
 )
 
 register(
-    id='zelda-narrow-puzzle-v0',
+    id='zelda-narrow-puzzle-2x3-v0',
     entry_point='pcgrl.zelda.ZeldaEnv:ZeldaEnv',
     kwargs={"seed" : 42,
             "rep" : Behaviors.NARROW_PUZZLE.value,
@@ -129,36 +146,12 @@ register(
             "save_logger" : True,
             "save_image_level" : False,
             "show_logger" : False,
+            "rendered" : True,
             "action_change" : False,
-            "board" : (3,2),
-            "piece_size" : 8}
-)
-
-register(
-    id='smb-narrow-puzzle-v0',
-    entry_point='pcgrl.smb.SMBEnv:SMBEnv',
-    kwargs={"seed" : 42,
-            "rep" : Behaviors.NARROW_PUZZLE.value,
-            "path" : None,
-            "save_logger" : True,
-            "save_image_level" : False,
-            "show_logger" : False,
-            "action_change" : False,
-            "board" : (6, 1),
-            "piece_size" : 8}
-)
-
-register(
-    id='minimap-narrow-puzzle-v0',
-    entry_point='pcgrl.minimap.MiniMapEnv:MiniMapEnv',
-    kwargs={"seed" : 42,
-            "rep" : Behaviors.NARROW_PUZZLE.value,
-            "path" : None,
-            "save_logger" : True,
-            "save_image_level" : False,
-            "show_logger" : False,
-            "action_change" : False,
-            "board" : (3,2),
+            "action_rotate" : False,
+            "agent" : Experiment.AGENT_HEQHP.value,
+            "reward_change_penalty" : -1,            
+            "board" : (3, 2),
             "piece_size" : 8}
 )
 

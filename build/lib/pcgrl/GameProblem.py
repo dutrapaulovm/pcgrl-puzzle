@@ -267,8 +267,8 @@ class GameProblem():
                 
                 self.update()        
                 self.draw()
-
-                scaled_win = pygame.transform.smoothscale(self.gamescreen, self.screen.get_size())
+                scaled_win = pygame.transform.scale(self.gamescreen, self.screen.get_size())
+                #scaled_win = pygame.transform.smoothscale(self.gamescreen, self.screen.get_size())
                 self.screen.blit(scaled_win, (0, 0))        
                 # Refresh Screen            
                 pygame.display.flip()                

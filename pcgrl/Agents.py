@@ -114,8 +114,12 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
     an environment called representations
     There are two representations: NARROW_PUZZLE e WIDE_PUZZLE
     """  
-    def __init__(self, max_iterations=None, env = None, rep = None, piece_size = (4, 4), 
-                       path_pieces = None, action_change = False, action_rotate = False, n_models = -1, extra_actions = {}):
+    def __init__(self, max_iterations=None, 
+                       env = None, rep = None, piece_size = (4, 4), 
+                       path_pieces = None, 
+                       action_change = False, 
+                       action_rotate = False, 
+                       n_models = -1, extra_actions = {}):
         
         super(LevelDesignerAgentBehavior, self).__init__(max_iterations=max_iterations, env = env)
 
@@ -149,11 +153,12 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
             actions = [self.generator.action_space.n]
 
             if (self.action_change) and (self.action_rotate):
-                actions.append(3)                
+                actions.append(2)                
+                actions.append(4)
             elif (self.action_change):
-                actions.append(2)            
-            elif (self.action_rotate):
-                actions.append(2)                            
+                actions.append(2)
+            elif (self.action_rotate):                
+                actions.append(4)                            
             else:                                
                 for k, v in extra_actions.items():                    
                     actions.append(v)
@@ -230,19 +235,21 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
             print()
 
             do_change = True
-            do_rotate = False
+            do_rotate = self.action_rotate
+            rotate_direction = 0
             act = action[0]
             reward = 0.0
 
-            if self.action_change:
-                act = action[0]
-                do_change = (action[1] == 1)            
             if self.action_change and self.action_rotate:
                 act = action[0]
-                do_rotate = (action[1] == 2)                
+                do_change = (action[1] == 1)                
+                rotate_direction = action[2]
             elif not self.action_change and self.action_rotate:
-                act = action[0]
-                do_rotate = (action[1] == 1)                
+                act = action[0]                
+                rotate_direction = action[1]
+            elif self.action_change:
+                    act = action[0]
+                    do_change = (action[1] == 1)            
 
             if do_change:
                 print("Alterou: {}-{}".format(action, self.action_change))
@@ -253,7 +260,7 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
                 change += v                  
                 self.grid[y][x] = act
                                 
-                game.map, piece = self.generator.build_map(game.map, act, offset=self.env.game.border_offset(), rotate = do_rotate)
+                game.map, piece = self.generator.build_map(game.map, act, offset=self.env.game.border_offset(), rotate = do_rotate, rotate_direction=rotate_direction)
                 game.clear()
                 game.create_map(game.map)
                 reward = 0#js_divergence(self.last_piece, piece)                

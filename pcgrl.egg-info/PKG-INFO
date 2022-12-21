@@ -1,12 +1,15 @@
-Metadata-Version: 2.1
+Metadata-Version: 1.2
 Name: pcgrl
 Version: 0.0.80.0
 Summary: A package for "Procedural Content Generation via Reinforcement Learning" OpenAI Gym interface.
-Home-page: https://github.com/paulovmdutra/PCGRLPUZZLE
+Home-page: https://github.com/dutrapaulovm/pcgrl-puzzle
 Author: Paulo Vinícius Moreira Dutra
 Author-email: paulo.dutra@ifsudestemg.edu.br
-Project-URL: Bug Tracker, https://github.com/paulovmdutra/PCGRLPUZZLE/issues
+License: UNKNOWN
+Project-URL: Bug Tracker, https://github.com/dutrapaulovm/pcgrl-puzzle/issues
+Description: UNKNOWN
 Keywords: OpenAI-Gym Procedural-Content-Generation Reinforcement-Learning-Environment
+Platform: UNKNOWN
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Intended Audience :: Developers
 Classifier: Intended Audience :: Science/Research

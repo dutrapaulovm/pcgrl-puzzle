@@ -92,6 +92,25 @@ register(
             "show_logger" : False,
             "rendered" : True,
             "action_change" : True,
+            "action_rotate" : False,
+            "agent" : Experiment.AGENT_HEQHP.value,
+            "reward_change_penalty" : -1,            
+            "board" : (3, 2),
+            "piece_size" : 8,
+            "path_models" : "mazecoin-lowmodels/"}
+)
+
+register(
+    id='mazecoin-narrow-puzzle-2x3-v2',
+    entry_point='pcgrl.mazecoin.MazeCoinLowMapsEnv:MazeCoinLowMapsEnv',
+    kwargs={"seed" : 42,
+            "rep" : Behaviors.NARROW_PUZZLE.value,
+            "path" : None,
+            "save_logger" : False,
+            "save_image_level" : False,
+            "show_logger" : False,
+            "rendered" : True,
+            "action_change" : True,
             "action_rotate" : True,
             "agent" : Experiment.AGENT_HEQHP.value,
             "reward_change_penalty" : -1,            

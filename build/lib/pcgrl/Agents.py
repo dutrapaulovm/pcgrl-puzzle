@@ -19,6 +19,7 @@ from gym.utils import seeding
 from gym import spaces
 from collections import OrderedDict
 
+
 class Actions(Enum):
     UP    = 0
     DOWN  = 1
@@ -113,8 +114,12 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
     an environment called representations
     There are two representations: NARROW_PUZZLE e WIDE_PUZZLE
     """  
-    def __init__(self, max_iterations=None, env = None, rep = None, piece_size = (4, 4), 
-                       path_pieces = None, action_change = False, n_models = -1, extra_actions = {}):
+    def __init__(self, max_iterations=None, 
+                       env = None, rep = None, piece_size = (4, 4), 
+                       path_pieces = None, 
+                       action_change = False, 
+                       action_rotate = False, 
+                       n_models = -1, extra_actions = {}):
         
         super(LevelDesignerAgentBehavior, self).__init__(max_iterations=max_iterations, env = env)
 
@@ -130,10 +135,11 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
         self.max_cols = int((dim[0] / env.game.tile_width)  / piece_size[1])
         board_pieces = int(self.max_cols * self.max_rows)                       
         self.total_board_pieces = board_pieces
-        self.generator =  Generator(path=path_pieces, piece_size=piece_size, dim=dim, n_models = n_models)        
+        self.generator =  Generator(path=path_pieces, piece_size=piece_size) #, dim=dim, n_models = n_models)        
         self.last_piece = np.zeros(piece_size)
         self.last_action    = -100
         self.action_change = action_change        
+        self.action_rotate = action_rotate
         self.total_pieces = self.generator.action_space.n
         self.pieces = []
         for i in range(self.total_board_pieces):
@@ -145,8 +151,14 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
             self.generator.max_rows = self.max_rows            
             
             actions = [self.generator.action_space.n]
-            if (self.action_change):
+
+            if (self.action_change) and (self.action_rotate):
+                actions.append(2)
+                actions.append(2)
+            elif (self.action_change):
                 actions.append(2)            
+            elif (self.action_rotate):
+                actions.append(2)                            
             else:                                
                 for k, v in extra_actions.items():                    
                     actions.append(v)
@@ -223,15 +235,23 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
             print()
 
             do_change = True
+            do_rotate = False
             act = action[0]
             reward = 0.0
 
-            if self.action_change:
+            if self.action_change and self.action_rotate:
                 act = action[0]
-                do_change = (action[1] == 1)
+                do_change = (action[1] == 1)                
+                do_rotate = (action[2] == 1)
+            elif not self.action_change and self.action_rotate:
+                act = action[0]
+                do_rotate = (action[1] == 1)
+            elif self.action_change:
+                    act = action[0]
+                    do_change = (action[1] == 1)            
 
             if do_change:
-                print("Alterou")
+                print("Alterou: {}-{}".format(action, self.action_change))
                 x = self.generator.curr_col
                 y = self.generator.curr_row
                 piece  = self.grid[y][x]
@@ -239,7 +259,7 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
                 change += v                  
                 self.grid[y][x] = act
                                 
-                game.map, piece = self.generator.build_map(game.map, act,  offset=self.env.game.border_offset())                             
+                game.map, piece = self.generator.build_map(game.map, act, offset=self.env.game.border_offset(), rotate = do_rotate)
                 game.clear()
                 game.create_map(game.map)
                 reward = 0#js_divergence(self.last_piece, piece)                
@@ -252,7 +272,7 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
                 self.last_action = act
                 self.current_piece_index += 1
             else:
-                print("Não Alterou")   
+                print("Não Alterou: {}".format(action))
                 
         elif (self.representation == Behaviors.WIDE_PUZZLE.value):                                              
             print("Wide Puzzle: ", action)
@@ -330,8 +350,21 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
                 
         self.add_reward(reward)
                 
-        return reward, change, piece #obs, reward, done, info   
+        return reward, change, piece #obs, reward, done, info  
 
+
+class AgentBSF(AgentBehavior):
+
+    def __init__(self, map):
+        super().__init__(0)
+        self.map = np.array(map)
+
+    def step(self, action):
+        start       = action[0]
+        destination = action[1]
+        passables   = action[2]        
+        return find_solution(self.map.copy(), start, destination, passables)
+        
 
 #https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
 class Node():

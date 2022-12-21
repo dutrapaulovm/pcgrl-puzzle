@@ -6,20 +6,20 @@ from setuptools import find_packages
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "pcgrl"))
 
-setup(name='pcgrl-puzzle',
+setup(name='pcgrl',
     version='0.0.80.0',
-    install_requires=['gym', 'stable-baselines3', 'sb3-contrib'],
+    install_requires=['gym'],
     author="Paulo Vinícius Moreira Dutra",
     author_email="paulo.dutra@ifsudestemg.edu.br",
     description="A package for \"Procedural Content Generation via Reinforcement Learning\" OpenAI Gym interface.",
-    url="https://github.com/paulovmdutra/PCGRLPUZZLE",
+    url="https://github.com/dutrapaulovm/pcgrl-puzzle",
     keywords=' '.join([
         'OpenAI-Gym',       
         'Procedural-Content-Generation',        
         'Reinforcement-Learning-Environment',
     ]),    
     project_urls={
-        "Bug Tracker": "hhttps://github.com/dutrapaulovm/pcgrl-puzzle/issues",
+        "Bug Tracker": "https://github.com/dutrapaulovm/pcgrl-puzzle/issues",
     },
     packages=[package for package in find_packages() if package.startswith("pcgrl")],    
     classifiers=[

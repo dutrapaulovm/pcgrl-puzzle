@@ -3,8 +3,8 @@ python -m pip uninstall pcgrl
 python -m pip install --upgrade pip setuptools wheel
 
 pip install gym
-pip install stable-baselines3
-pip install sb3-contrib
+pip install stable-baselines3==1.6.2
+pip install sb3-contrib==1.6.2
 pip install pygame==2.0.0 
 pip install ipython
 pip install opencv-python

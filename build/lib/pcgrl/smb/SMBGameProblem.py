@@ -55,8 +55,8 @@ class SMBGameProblem(GameProblem):
         self.showinfo          = False
         self.leveldesigners    = {}                
         self._range_coins      = {"min" : 2, "max" : 10}
-        self._range_enemies      = {"min" : 2, "max" : 10}
-        self.show_hud = False
+        self._range_enemies    = {"min" : 2, "max" : 10}
+        self.show_hud          = False
 
         self.neighbors = 0
         for row in range(self.get_rows()):
@@ -64,7 +64,7 @@ class SMBGameProblem(GameProblem):
                 y = row * self.get_state_height()
                 x = col * self.get_state_width()
                 ground = Background(x, y)
-                self.addBackground(ground)
+                self.addBackground_first(ground)
                         
         self.tiles = ["Background", "Ground", "Ladder", "Block", "DoorEntrance", "DoorExit", "Key", "Coin", "Player", "Enemy"]        
         self.dic_tiles = convert_strarray_to_dic(self.tiles)
@@ -135,7 +135,9 @@ class SMBGameProblem(GameProblem):
         if not self.blocked:
             self.__create()  
             
-    def update_map(self):
+    def update_map(self, data = None):
+        if (not data is None):
+            self.map = data
         self.clear()
         self.__create() 
 

@@ -62,7 +62,6 @@ test/test_entropy.py
 test/test_env.py
 test/test_flood_fill.py
 test/test_generator.py
-test/test_loadmap.py
 test/test_maze_env.py
 test/test_path_finding.py
 test/testactions.py

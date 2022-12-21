@@ -23,6 +23,10 @@ from queue import Queue
 
 import os
 
+def normalize(x):
+    return (x-min(x))/(max(x)-min(x))
+    #return 2*(x-min(x))/(max(x)-min(x))-1
+
 def clamp(num, min_value, max_value):
     num = max(min(num, max_value), min_value)
     return num
@@ -83,7 +87,7 @@ def ecdf(data):
 #https://machinelearningmastery.com/divergence-between-probability-distributions/        
 # calculate the kl divergence
 def kl_divergence(p, q):   
-    return sum(p[i] * np.log(p[i] / q[i]) for i in range(len(p)))   
+    return np.sum(np.where(p != 0, p * np.log(p / q), 0))#sum(p[i] * np.log(p[i] / q[i]) for i in range(len(p)))   
  
 # calculate the js divergence
 def js_divergence(p, q, w = 0.5, epsilon: float = 1e-8):
@@ -101,6 +105,42 @@ def js_divergence(p, q, w = 0.5, epsilon: float = 1e-8):
             
     return (w * kl_divergence(p, q) + (1 - w) * kl_divergence(q, m))
     #return w * kl_divergence(p, m) + w * kl_divergence(q, p)
+
+def dkl(p, q, w = 0.5, epsilon: float = 0.001):
+    
+    p = np.array(p)
+    p = p.flatten()      
+    
+    q = np.array(q)
+    q = q.flatten()
+        
+    p = p+epsilon
+    q = q+epsilon
+
+    return (w * kl_divergence(p, q) + (1 - w) * kl_divergence(q, p))
+
+def calcTileProb(lv, fh=2, fw=2):
+    mp = {}
+    h, w = lv.shape
+    for i in range(h-fh+1):
+        for j in range(w-fw+1):
+            k = tuple((lv[i:i+fh, j:j+fw]).flatten())
+            mp[k] = (mp[k]+1) if (k in mp.keys()) else 1
+    return mp
+
+def calKLFromMap(mpa, mpb, w=0.5, eps=0.001):
+    result = 0
+    keys = set(mpa.keys()) | set(mpb.keys())
+    suma = sum([mpa[e] for e in mpa.keys()])
+    sumb = sum([mpb[e] for e in mpb.keys()])
+    #print(suma)
+    #print(sumb)
+    #print(keys)
+    for e in keys:
+        a = ((eps + mpa[e]) / (suma + len(keys) * eps)) if (e in mpa.keys()) else (eps / (suma + len(keys) * eps))
+        b = ((eps + mpb[e]) / (sumb + len(keys) * eps)) if (e in mpb.keys()) else (eps / (sumb + len(keys) * eps))
+        result += w * a * math.log2(a / b) + (1 - w) * b * math.log2(b / a)
+    return result
 
 def decoded(state, max_cols):	
     
@@ -147,9 +187,11 @@ def decodedXY(state, screen_width, state_width, state_height):
 def neighbors(row, col, n, m, four_way=False):
     """Return indices of adjacent cells"""
     if four_way:
-        return [
-            (max(0, row - 1), col), (row, min(m, col + 1)),
-            (min(n, row + 1), col), (row, max(0, col - 1))]
+        return [ (max(0, row - 1), col), 
+                 (row, min(m, col + 1)),
+                 (min(n, row + 1), col), 
+                 (row, max(0, col - 1))
+                ]
     else:        
         return [
             (max(0, row - 1), col), (max(0, row - 1), min(m, col + 1)),
@@ -286,6 +328,43 @@ def flood_fill_v4(grid, row, col, passable):
                 queue.put((r , c))        
     
     return num_tiles
+
+def find_solution(grid, start, destination, passable):
+    num_tiles = 0
+    n = len(grid)-1
+    m = len(grid[0])-1
+
+    row = start[0]
+    col = start[1]
+
+    if grid[row][col] not in passable:
+        return 2
+    queue = Queue()   
+
+
+    queue.put((row, col))
+
+    row_dest = destination[0]
+    col_dest = destination[1]
+
+    while not queue.empty():                        
+
+        row, col = queue.get()                                               
+        
+        if (row == row_dest and col == col_dest):
+            return 1 
+
+        if grid[row][col] not in passable:
+            continue
+        else:            
+            num_tiles += 1                                    
+            grid[row][col] = num_tiles
+            nei = neighbors(row, col, n, m, four_way=True)
+            for r, c in nei:                   
+                queue.put((r , c))
+    
+    return 0
+
 
 def flood_fill_v5(grid, row, col, passable, images):
     num_tiles = 0
@@ -558,13 +637,13 @@ def A_star(graph, start, goal, pathMap):
             pathMap[neighbor[0]][neighbor[1]] = 25
 
         img = pathMap                 # Display path while building
-        """
+        
         plt.subplot(2, 2, 2)
         plt.xticks([]), plt.yticks([])
         plt.imshow(img)
         plt.title('A* search')
         plt.pause(0.1)
-        """
+        
     return False
 
 

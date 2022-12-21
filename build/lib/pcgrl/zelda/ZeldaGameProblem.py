@@ -16,10 +16,10 @@ import csv
 
 class ZeldaGameProblem(GameProblem):    
 
-    def __init__(self, rows = 0, cols = 0, border = False):
+    def __init__(self, rows = 0, cols = 0, border = False, tile_size = TILE_SIZE):
 
         self.border = border
-        self.tile_size = 64
+        self.tile_size = tile_size
 
         offset_border = 0
         
@@ -36,7 +36,7 @@ class ZeldaGameProblem(GameProblem):
             self.width = 16 * self.tile_size
             self.height = 8 * self.tile_size        
         
-        super().__init__(w = self.width, h = self.height, tile_w = self.tile_size, tile_h = self.tile_size)            
+        super(ZeldaGameProblem, self).__init__(w = self.width, h = self.height, tile_w = self.tile_size, tile_h = self.tile_size)
 
         self.fntHUD      = pygame.font.Font('freesansbold.ttf', 24)     
         self.fntSmallHUD = pygame.font.Font('freesansbold.ttf', 16)
@@ -55,7 +55,7 @@ class ZeldaGameProblem(GameProblem):
         self.showinfo          = False
         self.leveldesigners    = {}                
         self._range_coins      = {"min" : 4, "max" : 10}
-        self._range_enemies      = {"min" : 2, "max" : 6}
+        self._range_enemies    = {"min" : 2, "max" : 6}
         self.show_hud = False
 
         self.neighbors = 0
@@ -64,16 +64,11 @@ class ZeldaGameProblem(GameProblem):
                 y = row * self.get_state_height()
                 x = col * self.get_state_width()
                 ground = Ground(x, y)
-                self.addBackground(ground)
+                self.addBackground_first(ground)
                         
         self.tiles = ["Ground", "Block", "DoorEntrance", "DoorExit", "Coin", "Key", "Player", "Enemy", "Weapon"]        
-        self.dic_tiles = convert_strarray_to_dic(self.tiles)
-        """
-        self.dic_tiles = {}
-        for i in range(len(self.tiles)):
-            tile = self.tiles[i]
-            self.dic_tiles[tile] = i
-        """
+        self.dic_tiles = convert_strarray_to_dic(self.tiles)  
+
     def border_offset(self):
         return (1, 1)
 
@@ -119,6 +114,7 @@ class ZeldaGameProblem(GameProblem):
                 col = position[1]
 
             self.change_tile(col * self.get_state_width(), row * self.get_state_height(), obj_id)            
+            
     
     def load_map(self, path_map):   
         data = []
@@ -128,6 +124,7 @@ class ZeldaGameProblem(GameProblem):
         data = np.array(data).astype("int") 
         
         self.map = data
+        self.clear()        
         self.__create()
         
     def render_map(self):
@@ -139,7 +136,9 @@ class ZeldaGameProblem(GameProblem):
         if not self.blocked:
             self.__create()  
             
-    def update_map(self):
+    def update_map(self, data = None):
+        if (not data is None):
+            self.map = data
         self.clear()
         self.__create() 
 
@@ -177,7 +176,7 @@ class ZeldaGameProblem(GameProblem):
                     
             tile = self.create_tile(val, x = col * state_w, y = row * state_h)                         
 
-        self.map[row, col] = val
+            self.map[row, col] = tile
                
     def get_tiles(self):
         return self.tiles
@@ -277,7 +276,7 @@ class ZeldaGameProblem(GameProblem):
     def create_tile(self, tile, x, y):        
         val = tile
         if val == Ground.ID:
-            tile  = Ground(id =Ground.ID, x = x, y = y)                    
+            tile  = Ground(id = Ground.ID, x = x, y = y)                    
             self.addBackground(tile)                   
         elif val == Block.ID:
             tile  = Block(id =Block.ID, x = x, y = y)                    
@@ -299,10 +298,10 @@ class ZeldaGameProblem(GameProblem):
             self.addPlayers(tile)  
         elif val == Enemy.ID:
             tile  = Enemy(id = Enemy.ID, x = x, y = y)                    
-            self.addPlayers(tile)            
+            self.addEnemies(tile)            
         elif val == Weapon.ID:
             tile  = Weapon(id = Weapon.ID, x = x, y = y)                    
-            self.addLevelObjects(tile)        
+            self.addLevelObjects(tile)
         else:
             assert False, "unknown tile in decode '%s'" % tile
 
@@ -317,6 +316,8 @@ class ZeldaGameProblem(GameProblem):
             for col in range(self.get_cols()):                
                 val = self.map[row, col]
                 tile = self.create_tile(val, x = col * state_w, y = row * state_h)
+
+        super().create()
 
     def draw_hud(self, screen):
         space_line    = 32

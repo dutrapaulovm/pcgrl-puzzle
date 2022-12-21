@@ -5,6 +5,7 @@ from pcgrl.mazecoin import *
 from pcgrl.Sprite import * 
 
 from pygame.locals import *
+import random
 
 #path = os.path.abspath(os.path.join("mazecoin", os.pardir))
 #RESOURCES_PATH = os.path.join(path, "pcgrl/resources/mazecoin/")
@@ -12,7 +13,7 @@ from pcgrl import PCGRLPUZZLE_RESOURCES_PATH
 path = os.path.abspath(os.path.join("mazecoin", os.pardir))
 RESOURCES_PATH = os.path.join(PCGRLPUZZLE_RESOURCES_PATH, "mazecoin/")
 
-TILE_SIZE = 64
+TILE_SIZE = 16
 
 class Ground(Sprite):
     ID = 0
@@ -20,7 +21,20 @@ class Ground(Sprite):
         self.id = id
         self.name = "Ground"        
         dir_tile = f"tile{tile_width}"
-        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "ground.png")
+
+        p = random.randrange(1, 100)
+        
+        if (p > 50):
+            id_image = 1
+        elif (p >= 11) and (p <= 50):
+            id_image = 2          
+        elif (p <= 10):
+            id_image = 3
+        else:
+            id_image = 1
+
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "floor{}.png".format(id_image))        
+        
         super().__init__(path, x, y, tile_width, tile_height)
 
 class Block(Sprite):
@@ -29,7 +43,8 @@ class Block(Sprite):
         self.id = id
         self.name = "Block"
         dir_tile = f"tile{tile_width}"
-        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "block.png")
+        #path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "block.png")
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "wall.png")   
         super().__init__(path, x, y, tile_width, tile_height)
 
     def create(self):
@@ -63,7 +78,9 @@ class Player(Sprite):
         self.id = id
         self.name = "Player"            
         dir_tile = f"tile{tile_width}"
-        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "player.png")
+        id_image = random.randrange(1, 4)        
+        self.last_action = 0
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "player{}.png".format(id_image)) 
         super().__init__(path, x, y, tile_width, tile_height)
         
     def draw(self, screen):
@@ -85,9 +102,9 @@ class Player(Sprite):
             self.changeX = new_pos            
         
         if self.is_wall_collision(x + self.width, y):        
-            return -2
+            return -0.1
 
-        return -1
+        return -0.1
 
     def move_left(self):
         new_pos = max(self.rect.x - self.width, self.width)
@@ -98,9 +115,9 @@ class Player(Sprite):
             self.changeX = new_pos           
         
         if self.is_wall_collision(x - self.width, y):        
-            return -2
+            return -0.1
 
-        return -1
+        return -0.1
     
     def move_up(self):                
         new_pos = max(self.rect.y - self.height, self.height)
@@ -110,9 +127,9 @@ class Player(Sprite):
             self.changeY = new_pos                
         
         if self.is_wall_collision(x, y- self.height):        
-            return -2
+            return -0.1
 
-        return -1    
+        return -0.1
     
     def move_down(self):
         new_pos = min(self.rect.y + self.height, self.parent.get_height()-(self.height*2))
@@ -122,51 +139,88 @@ class Player(Sprite):
         if not self.is_wall_collision(x, y):        
             self.changeY = new_pos
         
-        if self.is_wall_collision(x , y+ self.height):                    
-            return -2
+        if self.is_wall_collision(x , y+self.height):                    
+            return -0.1
 
-        return -1
+        return -0.1
 
     def step(self, action):
 
         action_map = {
-            0 : 'right',
-            1 : 'left',
-            2 : 'down',
-            3 : 'up',        
-            4 : 'no_op'
+            1 : 'right',
+            2 : 'left',
+            3 : 'down',
+            4 : 'up',        
+            0 : 'no_op'
         }
         reward = 0.0
+        #print("{}, {}".format(action_map[action], action_map[self.last_action]))
         if action == 1:
-            reward = self.move_right()
+            
+            if self.last_action == 2 or self.last_action == 3 or self.last_action == 4:
+                if self.is_coin_collision(self.rect.x-self.width, self.rect.y, remove=False):
+                    reward -= 10
+
+            reward += self.move_right()             
+
         elif action == 2:
-            reward = self.move_left()
+
+            if self.last_action == 1 or self.last_action == 3 or self.last_action == 4:
+                if self.is_coin_collision(self.rect.x+self.width, self.rect.y, remove=False):
+                    reward -= 10 
+
+            if self.is_coin_collision(self.rect.x, self.rect.y+self.height, remove=False) or \
+               self.is_coin_collision(self.rect.x, self.rect.y-self.height, remove=False):
+                reward -= 10     
+
+            reward += self.move_left()
+                    
         elif action == 3:
-            reward = self.move_down()
+
+            if self.last_action == 4:
+                if self.is_coin_collision(self.rect.x, self.rect.y-self.height, remove=False):
+                    reward -= 10  
+            
+            if self.is_coin_collision(self.rect.x+self.width, self.rect.y, remove=False) or \
+               self.is_coin_collision(self.rect.x-self.width, self.rect.y, remove=False):
+                reward -= 10  
+
+            reward += self.move_down()
+
         elif action == 4:
-            reward = self.move_up()           
+            
+            if self.last_action == 3:
+                if self.is_coin_collision(self.rect.x, self.rect.y+self.height, remove=False):
+                    reward -= 10
+            
+            if self.is_coin_collision(self.rect.x+self.width, self.rect.y, remove=False) or \
+               self.is_coin_collision(self.rect.x-self.width, self.rect.y, remove=False):
+                reward -= 10  
+
+            reward += self.move_up()                                     
         
+        self.last_action = action
+
         if self.is_coin_collision(self.rect.x, self.rect.y):
-            r = 100
-            return r
+            reward = 5
+
+        #print(reward)
 
         return reward       
 
     def do(self, event):        
-        pass
-        """
         if event.type == pygame.QUIT:
             return True            
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_DOWN:
-                self.move_down()
+                self.step(3)
             elif event.key == pygame.K_LEFT:
-                self.move_left()
+                self.step(2)
             elif event.key == pygame.K_RIGHT:
-                self.move_right()
+                self.step(1)
             elif event.key == pygame.K_UP:
-                self.move_up()          
-        """
+                self.step(4)
+        
     def is_wall_collision(self, x, y):
         rect = pygame.Rect(x, y, (self.width*self.parent.scale), self.width)
         aux = pygame.sprite.Sprite()
@@ -179,15 +233,16 @@ class Player(Sprite):
         #    print("Colidiu com a parede")
         #aux = None
         #rect = None
-        return b
+        return b  
 
-    def is_coin_collision(self, x, y):
+    def is_coin_collision(self, x, y, remove = True):
         rect = pygame.Rect(x, y, self.width, self.width)
         aux = pygame.sprite.Sprite()
         aux.image = pygame.Surface((self.width, self.width))
         aux.rect = rect                
-        list_sprites = pygame.sprite.spritecollide(aux, self.parent.levelObjects, True)
+        list_sprites = pygame.sprite.spritecollide(aux, self.parent.levelObjects, remove)
         b = len(list_sprites)
-        for e in list_sprites:     
-            self.parent.levelObjects.remove(e)        
+        if (remove):           
+            for e in list_sprites:     
+                self.parent.levelObjects.remove(e)        
         return b

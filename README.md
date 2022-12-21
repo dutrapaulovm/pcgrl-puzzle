@@ -21,11 +21,11 @@ Another way is to use [Conda](https://www.anaconda.com/) by creating a virtual e
 conda create --name pcgrl-puzzle
 conda activate pcgrl-puzzle
 pip install gym
-pip install stable-baselines3
-pip install sb3-contrib
+pip install stable-baselines3==1.6.2
+pip install sb3-contrib==1.6.2
 pip install pygame==2.0.0 
 pip install ipython
-pip install opencv-py thon
+pip install opencv-python
 pip install imageio
 pip install pandas
 cd pcgrl-puzzle
@@ -49,8 +49,9 @@ The environments listed below are implemented in the [pcgrl-puzzle](/pcgrl-puzzl
 
 1. 'mazecoin-narrow-puzzle-2x3-v0' 
 2. 'mazecoin-narrow-puzzle-2x3-v1', 
-3. 'dungeon-narrow-puzzle-2x3-v0' 
-4. 'zelda-narrow-puzzle-2x3-v0'
+3. 'mazecoin-narrow-puzzle-2x3-v2',
+4. 'dungeon-narrow-puzzle-2x3-v0' 
+5. 'zelda-narrow-puzzle-2x3-v0'
 
 ### Simple example
 

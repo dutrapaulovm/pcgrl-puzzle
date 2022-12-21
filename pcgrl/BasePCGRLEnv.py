@@ -84,8 +84,10 @@ class BasePCGRLEnv(PCGRLEnv):
         
         self.agent  = LevelDesignerAgentBehavior(env = self, 
                             piece_size=(self.piece_size, self.piece_size), 
-                            rep = self.representation, path_pieces = path_piece, 
-                            action_change=self.action_change, action_rotate=self.action_rotate)
+                            rep = self.representation, 
+                            path_pieces = path_piece, 
+                            action_change=self.action_change, 
+                            action_rotate=self.action_rotate)
 
         self.max_cols_piece = self.agent.max_cols
         self.max_rows_piece = self.agent.max_rows            

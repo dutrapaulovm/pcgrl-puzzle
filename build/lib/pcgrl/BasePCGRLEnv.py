@@ -34,15 +34,20 @@ class BasePCGRLEnv(PCGRLEnv):
                 save_image_level = False, path = ".\Results",
                 rep = None, name = "BasePCGRLEnv",
                 action_change = False,
+                action_rotate = False,
                 env_rewards = False,
+                rendered = False,
+                agent = None,
+                reward_change_penalty = None,
                 path_models = None, callback = BasePCGRLCallback()):
         
         self.action_change  = action_change
-        self.agent          = None        
+        self.action_rotate  = action_rotate
+        self.agent          = agent
         self.segment        = 0
         self.max_segment    = 0
         self.representation = rep  
-        self.is_render      = False     
+        self.is_render      = rendered
         self.piece_size     = piece_size            
         self.board = board        
         self.path_models = path_models
@@ -63,7 +68,7 @@ class BasePCGRLEnv(PCGRLEnv):
         self._cumulative_reward = 0        
         self.last_pieces = []        
         self._last_rewards = 0
-        self.reward_change_penalty = None
+        self.reward_change_penalty = reward_change_penalty
         
         #obs = round(entropy(np.arange(board[0] * board[1]).reshape(board[1], board[0])), 2)
         self.max_entropy = calc_entropy(size=board, n_repetead=0) #round(entropy(obs), 2)          
@@ -80,20 +85,15 @@ class BasePCGRLEnv(PCGRLEnv):
         self.agent  = LevelDesignerAgentBehavior(env = self, 
                             piece_size=(self.piece_size, self.piece_size), 
                             rep = self.representation, path_pieces = path_piece, 
-                            action_change=self.action_change)
+                            action_change=self.action_change, action_rotate=self.action_rotate)
 
         self.max_cols_piece = self.agent.max_cols
         self.max_rows_piece = self.agent.max_rows            
         self.action_space   = self.agent.action_space
         self.max_segment = int( self.max_cols_piece * self.max_rows_piece )
         self._reward_agent  = 0
-        return self.action_space
-                 
-    """
-    def create_action_space(self):
-        self.action_space = None        
-        return self.action_space
-    """
+        return self.action_space                 
+
     def create_observation_space(self):                      
         width = self.game.get_cols()
         height = self.game.get_rows()
@@ -160,10 +160,10 @@ class BasePCGRLEnv(PCGRLEnv):
             if (not self.path is None):
                 if self.save_image_level:                                
                     df = pad.DataFrame(self.game.map)
-                    if (self._reward > 0):
-                        df.to_csv(self.path + "/map/best/Map"+str(self.counter_done)+".csv", header=False, index=False)
-                    else:
-                        df.to_csv(self.path + "/map/worst/Map"+str(self.counter_done)+".csv", header=False, index=False)
+                    #if (self._reward > 0):
+                    df.to_csv(self.path + "/map/best/Map"+str(self.counter_done)+".csv", header=False, index=False)
+                    #else:
+                    # df.to_csv(self.path + "/map/worst/Map"+str(self.counter_done)+".csv", header=False, index=False)
         
         self.info["counter_changes"] = self.counter_changes+1
         self.info["counter_done"]    = self.counter_done

@@ -14,10 +14,10 @@ import csv
 
 class DungeonGameProblem(GameProblem):    
 
-    def __init__(self, rows = 0, cols = 0, border = False):
+    def __init__(self, rows = 0, cols = 0, border = False, tile_size = TILE_SIZE):
 
         self.border = border
-        self.tile_size = TILE_SIZE
+        self.tile_size = tile_size
 
         offset_border = 0
         
@@ -34,7 +34,7 @@ class DungeonGameProblem(GameProblem):
             self.width = 16 * self.tile_size
             self.height = 8 * self.tile_size        
         
-        super().__init__(w = self.width, h = self.height, tile_w = self.tile_size, tile_h = self.tile_size)            
+        super(DungeonGameProblem, self).__init__(w = self.width, h = self.height, tile_w = self.tile_size, tile_h = self.tile_size)            
 
         self.fntHUD      = pygame.font.Font('freesansbold.ttf', 24)     
         self.fntSmallHUD = pygame.font.Font('freesansbold.ttf', 16)
@@ -59,7 +59,7 @@ class DungeonGameProblem(GameProblem):
                 y = row * self.get_state_height()
                 x = col * self.get_state_width()
                 ground = Ground(x, y)
-                self.addBackground(ground)         
+                self.addBackground_first(ground)         
         
         self.tiles = ["Ground", "Block"] 
         self.dic_tiles = convert_strarray_to_dic(self.tiles)
@@ -137,9 +137,11 @@ class DungeonGameProblem(GameProblem):
         if not self.blocked:
             self.__create()  
             
-    def update_map(self):
+    def update_map(self, data = None):
+        if (not data is None):
+            self.map = data
         self.clear()
-        self.__create()
+        self.__create() 
 
     def generate_map(self, random = None):                  
         border = 0    

@@ -10,144 +10,182 @@ from pcgrl.Sprite import *
 from pcgrl.Entity import * 
 from enum import Enum
 
-#path = os.path.abspath(os.path.join("minimap", os.pardir))
-#RESOURCES_PATH = os.path.join(path, "pcgrl/resources/minimap/")
 from pcgrl import PCGRLPUZZLE_RESOURCES_PATH
 path = os.path.abspath(os.path.join("minimap", os.pardir))
 RESOURCES_PATH = os.path.join(PCGRLPUZZLE_RESOURCES_PATH, "minimap/")
-TILE_SIZE = 64
+
+TILE_SIZE = 16
 class Grass(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 1):
+    ID = 0
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 1):
         self.id = id
         self.name = "Grass"
-        super().__init__(RESOURCES_PATH + "tile/medievalTile_58.png", x, y, tile_width, tile_height)
+        dir_tile = f"tile{tile_width}"
+        p = random.randrange(0, 100)
+        
+        if (p > 50):
+            id_image = 1        
+        else:
+            id_image = 2
 
-
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "grass{}.png".format(id_image))                        
+        
+        super().__init__(path, x, y, tile_width, tile_height)        
+"""
 class Crossing(Sprite):        
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 2):                
+    ID = 2
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 2):                
         self.id = id
         self.name = "Crossing"
         super().__init__(RESOURCES_PATH + "tile/medievalTile_10.png", x, y, tile_width, tile_height)        
 
 class CrossingTop(Sprite):        
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 3):        
+    ID = 3
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 3):        
         self.id = id
         self.name = "CrossingTop"
         super().__init__(RESOURCES_PATH + "tile/medievalTile_11.png", x, y, tile_width, tile_height)        
 
 class CrossingBottom(Sprite):
-    ID = -1       
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 4):        
+    ID = 4       
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 4):        
         self.id = id
         self.name = "CrossingBottom"
         super().__init__(RESOURCES_PATH + "tile/medievalTile_12.png", x, y, tile_width, tile_height)        
 
 class RoadVertical(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 5):
+    ID = 5
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 5):
         self.id = id
         self.name = "RoadVertical"
         super().__init__(RESOURCES_PATH + "tile/medievalTile_08.png", x, y, tile_width, tile_height)
 
 class RoadHorizontal(Sprite):        
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 6):        
+    ID = 6
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 6):        
         self.id = id
         self.name = "RoadHorizontal"
         super().__init__(RESOURCES_PATH + "tile/medievalTile_09.png", x, y, tile_width, tile_height)
 
 class RoadTopLeft(Sprite):        
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 7):        
+    ID = 7
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 7):        
         self.id = id
         self.name = "RoadTopLeft"
         super().__init__(RESOURCES_PATH + "tile/medievalTile_22.png", x, y, tile_width, tile_height)
 
 class RoadTopRight(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 8):        
+    ID = 8
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 8):        
         self.id = id
         self.name = "RoadTopRight"
         super().__init__(RESOURCES_PATH + "tile/medievalTile_22.png", x, y, tile_width, tile_height)
-
+"""
 class Trees(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 8):        
+    ID = 1
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 8):        
         self.id = id
         self.name = "Trees"
-        super().__init__(RESOURCES_PATH + "tile/medievalTile_44.png", x, y, tile_width, tile_height)
-
-class House1(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 8):        
-        self.id = id
-        self.name = "Trees"
-        super().__init__(RESOURCES_PATH + "structure/medievalStructure_17.png", x, y, tile_width, tile_height)
-
-class Warehouse(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 8):        
-        self.id = id
-        self.name = "Warehouse"
-        super().__init__(RESOURCES_PATH + "structure/medievalStructure_21.png", x, y, tile_width, tile_height)        
+        dir_tile = f"tile{tile_width}"
+        p = random.randrange(0, 100)
         
+        if (p > 50):
+            id_image = "0094"
+        else:
+            id_image = "0095"
+
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "tile_{}.png".format(id_image))   
+        super().__init__(path, x, y, tile_width, tile_height)                
 
 class RockGold(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 7):
+    ID = 2
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 7):
         self.id = id
         self.name = "RockGold"
-        super().__init__(RESOURCES_PATH + "environment/medievalEnvironment_19.png", x, y, tile_width, tile_height)
+        dir_tile = f"tile{tile_width}"
+        p = random.randrange(0, 100)
+        
+        if (p > 50):
+            id_image = "0101"
+        else:
+            id_image = "0124"
+
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "tile_{}.png".format(id_image))   
+        super().__init__(path, x, y, tile_width, tile_height)                
 
 class Rock(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 7):
+    ID = 3
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 7):
         self.id = id
         self.name = "Rock"
-        super().__init__(RESOURCES_PATH + "environment/medievalEnvironment_10.png", x, y, tile_width, tile_height)
- 
-class Fruit(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 7):
-        self.id = id
-        self.name = "Fruit"
-        super().__init__(RESOURCES_PATH + "environment/medievalEnvironment_20.png", x, y, tile_width, tile_height)  
- 
- 
- 
- 
-class Block(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 1):
-        self.id = id
-        self.name = "Block"
-        super().__init__(RESOURCES_PATH + "tile/block_05.png", x, y, tile_width, tile_height) 
-
-
-     
-class Castle(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 1):
-        self.id = id
-        self.name = "Castle"
-        super().__init__(RESOURCES_PATH + "structure/medievalStructure_02.png", x, y, tile_width, tile_height)         
+        dir_tile = f"tile{tile_width}"
+        p = random.randrange(0, 100)
         
+        if (p > 50):
+            id_image = "0098"
+        else:
+            id_image = "0099"
+
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "tile_{}.png".format(id_image)) 
+        super().__init__(path, x, y, tile_width, tile_height)                
+
+class House1(Sprite):
+    ID = 4
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 8):        
+        self.id = id
+        self.name = "Trees"
+        dir_tile = f"tile{tile_width}"
+        
+        id_image = "0143"        
+
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "tile_{}.png".format(id_image)) 
+        super().__init__(path, x, y, tile_width, tile_height)                
+
 class Person(Sprite):
-    ID = -1
-    def __init__(self, x, y, tile_width = 64, tile_height = 64, id = 1):
+    ID = 5
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 1):
         self.id = id
         self.name = "Person"
-        super().__init__(RESOURCES_PATH + "/unit/medievalUnit_06.png", x, y, tile_width, tile_height)         
+        dir_tile = f"tile{tile_width}"
+        p = random.randrange(0, 100)
         
-LEVELOBJECTS = {
-    "1": Crossing,
-    "2": CrossingTop,
-    "3": CrossingBottom,
-    "4": RoadVertical,
-    "5": RoadHorizontal,
-    "6": RoadTopLeft,
-    "7": RoadTopRight    
-}
+        if (p > 50):
+            id_image = "0132"
+        else:
+            id_image = "0133"
+
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "tile_{}.png".format(id_image)) 
+        super().__init__(path, x, y, tile_width, tile_height)  
+
+
+class Fruit(Sprite):
+    ID = 6
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 7):
+        self.id = id
+        self.name = "Fruit"
+        dir_tile = f"tile{tile_width}"
+        id_image = "0102"
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "tile_{}.png".format(id_image)) 
+        super().__init__(path, x, y, tile_width, tile_height)  
+
+class Warehouse(Sprite):
+    ID = 7
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 8):        
+        self.id = id
+        self.name = "Warehouse"
+        dir_tile = f"tile{tile_width}"
+        id_image = "0146"
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "tile_{}.png".format(id_image)) 
+        super().__init__(path, x, y, tile_width, tile_height)  
+     
+class Castle(Sprite):
+    ID = 8
+    def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 1):
+        self.id = id
+        self.name = "Castle"
+        dir_tile = f"tile{tile_width}"
+        path = "{}{}/{}".format(RESOURCES_PATH, dir_tile, "structure/medievalStructure_02.png")
+        super().__init__(path, x, y, tile_width, tile_height)  
+        
+
+        
