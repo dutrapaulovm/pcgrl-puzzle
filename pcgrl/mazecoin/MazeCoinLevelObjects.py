@@ -102,7 +102,7 @@ class Player(Sprite):
             self.changeX = new_pos            
         
         if self.is_wall_collision(x + self.width, y):        
-            return -0.1
+            return -10
 
         return -0.1
 
@@ -115,7 +115,7 @@ class Player(Sprite):
             self.changeX = new_pos           
         
         if self.is_wall_collision(x - self.width, y):        
-            return -0.1
+            return -10
 
         return -0.1
     
@@ -127,7 +127,7 @@ class Player(Sprite):
             self.changeY = new_pos                
         
         if self.is_wall_collision(x, y- self.height):        
-            return -0.1
+            return -10
 
         return -0.1
     
@@ -140,7 +140,7 @@ class Player(Sprite):
             self.changeY = new_pos
         
         if self.is_wall_collision(x , y+self.height):                    
-            return -0.1
+            return -10
 
         return -0.1
 

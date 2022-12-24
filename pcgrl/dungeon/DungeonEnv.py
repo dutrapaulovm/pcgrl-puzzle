@@ -31,8 +31,8 @@ class DungeonEnv(BasePCGRLEnv):
                 path_models = "dungeon/",
                 callback = BasePCGRLCallback()):        
 
-        self.cols = board[0] * min(piece_size, piece_size * 2) #Col
-        self.rows = board[1] * min(piece_size, piece_size * 2) #Row               
+        self.rows = board[0] * min(piece_size, piece_size * 2) #Row               
+        self.cols = board[1] * min(piece_size, piece_size * 2) #Col
         
         game = DungeonGameProblem(cols = self.cols, rows = self.rows, border = True)
         game.scale = 2

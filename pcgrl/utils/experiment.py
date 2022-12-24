@@ -942,7 +942,7 @@ if __name__ == '__main__':
 
     rl_algo = RlAlgo.PPO.value
     act_func = ActivationFunc.SIGMOID.value        
-    total_timesteps = 100000
+    total_timesteps = 1000
     learning_rate   = 3e-4
     n_steps         = 2048 #Horizon, see paper PPO               
     gamma           = 0.99
@@ -956,7 +956,7 @@ if __name__ == '__main__':
     reward_low_done_bonus    = 0
     reward_entropy_penalty   = 0
     reward_change_penalty    = -0.1
-    board = (3, 2)
+    board = (2, 3)
     path_results = "F:\Experimentos\Results-new-Factor10"
     seeds = [42]  
     uuid = "-{}-{}".format(max_changes,board)
@@ -978,7 +978,8 @@ if __name__ == '__main__':
         observations = [WrappersType.SEGMENT.value]                
         #envs = [Game.DUNGEON.value, Game.MAZECOINLOWMAPS.value, Game.ZELDA.value]          
         envs = [Game.ZELDA.value]          
-        agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value]
+        agents = [Experiment.AGENT_HEQHP.value]
+        #agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value]
         
         for a in agents:
             for e in envs:

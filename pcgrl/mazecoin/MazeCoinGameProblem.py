@@ -77,7 +77,7 @@ class MazeCoinGameProblem(GameProblem):
         reward = self.player.step(action)                                                  
         
         if len(self.levelObjects.sprites()) == 0:
-            return 20, True
+            return 50, True
 
         return reward, False
 

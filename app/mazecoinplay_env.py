@@ -107,7 +107,7 @@ class MazeCoinPlayEnv(gym.Env):
         self.rows = (board[1] * min(8, piece_size * 2)) + offset_border
 
         self.game = MazeCoinGameProblem(cols = self.cols, rows = self.rows, tile_size=tile_size)
-        self.game.show_game_hud = True
+        self.game.show_game_hud = False
         self.game.env = self
 
         if (not self.path_level is None and os.path.exists(self.path_level)):

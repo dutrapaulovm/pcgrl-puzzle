@@ -325,12 +325,6 @@ class ExpressiveRangePlot:
                                                     pathfile = os.path.join(path_map, file)                                                             
                                                     js_sum = 0.001                                                    
                                                     generatorA = Generator(path=pathfile, piece_size=(8, 8), loadmap=True, border=True)
-                                                    """
-                                                    for m in range(generatorA.count()):
-                                                        p = generatorA.get_piece(m)        
-                                                        ent = entropy(p)                                                        
-                                                        js_sum += ent                                
-                                                    """                          
                                                     yy, xx = [], []
                                                     indexpiece = 0
                                                     for m in range(generatorA.count()-1, 0, -1):
@@ -342,23 +336,9 @@ class ExpressiveRangePlot:
                                                                 q = calcTileProb(generatorA.get_piece(n))
                                                                 indexpiece += 1
                                                                 xx.append(indexpiece)
-                                                                #print(p)
-                                                                #print(q)
-                                                                """
-                                                                time.sleep(2)                    
-                                                                
-                                                                suma = sum([p[e] for e in p.keys()])
-                                                                sumb = sum([q[e] for e in q.keys()])                                                                
-                                                                print(suma)
-                                                                print(sumb)
-                                                                """
                                                                 js = calKLFromMap(p, q) 
                                                                 yy.append(js)            
-                                                                #kl = dkl(pp, qq)             
-                                                                #print("KLFrommap: {}, DKL: {}".format(js, kl))
-                                                                #time.sleep(1)
-                                                                js_sum += js                                                                                                                                
-                                                    
+                                                                js_sum += js                                                    
                                                     index += 1
                                                     x.append(index) 
                                                 #print(js_sum)

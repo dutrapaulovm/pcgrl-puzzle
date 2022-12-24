@@ -32,8 +32,8 @@ class SMBEnv(BasePCGRLEnv):
                  callback = BasePCGRLCallback()):
         
         self.rep = rep          
-        self.cols = board[0] * min(piece_size, piece_size * 2) #Col
-        self.rows = board[1] * min(piece_size, piece_size * 2) #Row               
+        self.rows = board[0] * min(piece_size, piece_size * 2) #Row               
+        self.cols = board[1] * min(piece_size, piece_size * 2) #Col
         game = SMBGameProblem(cols = self.cols, rows = self.rows, border = True)
         game.scale    = 2            
         self.action_change = action_change  

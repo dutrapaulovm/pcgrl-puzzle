@@ -284,7 +284,7 @@ class BasePCGRLEnv(PCGRLEnv):
                 r = (e**math.pi - self.entropy_min**math.pi)
                 f = 1.0
                 reward = (((r + sign(r)) * f) + self._done_bonus) * self.factor_reward
-
+                
         if (self.env_rewards):
             self._compute_extra_rewards()
             reward += self.reward_game

@@ -43,7 +43,7 @@ class Generator:
         if not loadmap:
             self.load_pieces() 
         else:
-            self.load_map()    
+            self.load_map()
         
         self.action_space = spaces.Discrete( len(self.pieces) )   
         self.action_space.seed(seed=seed)                      

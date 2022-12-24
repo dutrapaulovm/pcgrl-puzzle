@@ -89,7 +89,7 @@ if __name__ == "__main__":
         print("Start: ", start_agent)
         print()
 
-        model.learn(total_timesteps=1000000, callback=callback)
+        model.learn(total_timesteps=100000, callback=callback)
 
         end_agent = timer()        
         print("End: ", end_agent)
