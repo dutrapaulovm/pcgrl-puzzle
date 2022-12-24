@@ -73,3 +73,7 @@ while t < 1000:
     break
   t += 1
 ```
+
+## Traning and Inference
+
+You can train and inference using the [experiment.py](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/pcgrl/utils/experiment.py). You can configure the train and inference for different environments and agents. A  complete code you can see in the file [test_experiment.py](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/pcgrl/utils/test_experiment.py)

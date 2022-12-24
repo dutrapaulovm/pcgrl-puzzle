@@ -2,7 +2,7 @@ import argparse
 from pcgrl import *
 from pcgrl.BasePCGRLEnv import Experiment
 from pcgrl.utils.utils import ActivationFunc, RlAlgo
-from train import RL_ALGO, train_ppo
+from simple_train import RL_ALGO, train_ppo
 from pcgrl.wrappers import *
 from pcgrl.utils.experiment import ExperimentManager
 

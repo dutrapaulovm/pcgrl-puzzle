@@ -1,5 +1,5 @@
 import argparse
-from train import RL_ALGO
+from simple_train import RL_ALGO
 from pcgrl.utils.utils import ActivationFunc, RlAlgo
 import numpy as np
 
