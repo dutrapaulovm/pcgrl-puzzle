@@ -24,6 +24,7 @@ class DungeonEnv(BasePCGRLEnv):
                 action_change = False, 
                 action_rotate = False,
                 agent = None,
+                max_changes = 61,
                 reward_change_penalty = None,                
                 piece_size = 8, 
                 board = (3,2),
@@ -39,16 +40,17 @@ class DungeonEnv(BasePCGRLEnv):
         self.action_change = action_change
         self.action_rotate = action_rotate
         super(DungeonEnv, self).__init__(seed = seed, game = game, 
-                                        env_rewards=env_rewards, save_image_level = save_image_level, 
-                                        save_logger = save_logger, show_logger=show_logger, 
-                                        rep=rep, path=path, piece_size = piece_size, 
-                                        action_change=action_change,
-                                        action_rotate=action_rotate,
-                                        agent=agent,
-                                        reward_change_penalty=reward_change_penalty,                                          
-                                        board = board, path_models = path_models, callback=callback)
+                                                env_rewards=env_rewards, save_image_level = save_image_level, 
+                                                save_logger = save_logger, show_logger=show_logger, 
+                                                rep=rep, path=path, piece_size = piece_size, 
+                                                action_change=action_change,
+                                                action_rotate=action_rotate,
+                                                agent = agent,
+                                                max_changes=max_changes,
+                                                reward_change_penalty=reward_change_penalty,                                          
+                                                board = board, path_models = path_models, callback=callback)
         
         self.current_reward = 0        
-        self.counter_done    = 0        
+        self.counter_done   = 0        
         self.info = {}        
         self.name = "DungeonEnv"

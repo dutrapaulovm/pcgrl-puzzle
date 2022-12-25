@@ -16,9 +16,11 @@ class PCGRLEnv(gym.Env):
     """
     Create a new PCGRL environment
     """
-    def __init__(self, seed = None, game = None,
+    def __init__(self, seed = None, 
+                       game = None,
                        show_logger = False,  save_logger = False,
                        path = "", name = "PCGRLEnv", 
+                       max_changes = 61,
                        callback = BasePCGRLCallback()):
         super().__init__()
         self.seed(seed=seed)
@@ -56,7 +58,12 @@ class PCGRLEnv(gym.Env):
         self.last_counter_changes = 0        
         w = self.width / self.state_w
         h = self.height / self.state_h
-        self.max_changes = max(int(0.70 * w * h), 1) #Maximum number of changes until the enviroment be finished
+        
+        if max_changes is None or max_changes <= 0:
+            self.max_changes = max(int(0.70 * w * h), 1) #Maximum number of changes until the enviroment be finished
+        else:
+            self.max_changes = max_changes
+
         self.max_iterations = self.max_changes * w   #Maximum number of iterations until the enviroment be finished
         self.max_reset = 1                           #Maximum number of reset until the environment be finished        
         self.current_stats = {}           

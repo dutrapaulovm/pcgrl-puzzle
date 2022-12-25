@@ -30,7 +30,6 @@ from pcgrl.dungeon.DungeonGameProblem import DungeonGameProblem
 from pcgrl.dungeon.DungeonEnv import DungeonEnv
 
 from pcgrl.mazecoin.MazeCoinGameProblem import MazeCoinGameProblem
-from pcgrl.mazecoin.MazeCoinEnv import MazeCoinEnv
 from pcgrl.mazecoin.MazeCoinLowMapsEnv import MazeCoinLowMapsEnv
 
 from pcgrl.zelda.ZeldaGameProblem import ZeldaGameProblem
@@ -73,10 +72,11 @@ register(
             "show_logger" : False,
             "rendered" : True,
             "action_change" : False,
+            "max_changes" : 61,
             "action_rotate" : False,
             "agent" : Experiment.AGENT_HEQHP.value,
-            "reward_change_penalty" : -1,            
-            "board" : (3, 2),
+            "reward_change_penalty" : -0.1,            
+            "board" : (2, 3),
             "piece_size" : 8,
             "path_models" : "mazecoin-lowmodels/"}
 )
@@ -91,11 +91,12 @@ register(
             "save_image_level" : False,
             "show_logger" : False,
             "rendered" : True,
+            "max_changes" : 61,
             "action_change" : True,
             "action_rotate" : False,
             "agent" : Experiment.AGENT_HEQHP.value,
-            "reward_change_penalty" : -1,            
-            "board" : (3, 2),
+            "reward_change_penalty" : -0.1,            
+            "board" : (2, 3),
             "piece_size" : 8,
             "path_models" : "mazecoin-lowmodels/"}
 )
@@ -110,11 +111,12 @@ register(
             "save_image_level" : False,
             "show_logger" : False,
             "rendered" : True,
+            "max_changes" : 61,
             "action_change" : True,
             "action_rotate" : True,
             "agent" : Experiment.AGENT_HEQHP.value,
-            "reward_change_penalty" : -1,            
-            "board" : (3, 2),
+            "reward_change_penalty" : -0.1,            
+            "board" : (2, 3),
             "piece_size" : 8,
             "path_models" : "mazecoin-lowmodels/"}
 )
@@ -125,17 +127,60 @@ register(
         kwargs={"seed" : 42,
             "rep" : Behaviors.NARROW_PUZZLE.value,
             "path" : None,
-            "save_logger" : True,
+            "save_logger" : False,
             "save_image_level" : False,
             "show_logger" : False,
             "rendered" : True,
+            "max_changes" : 61,
             "action_change" : False,
             "action_rotate" : False,
             "agent" : Experiment.AGENT_HEQHP.value,
-            "reward_change_penalty" : -1,            
-            "board" : (3, 2),
+            "reward_change_penalty" : -0.1,            
+            "board" : (2, 3),
             "piece_size" : 8}
+            
 )
+
+register(
+    id='dungeon-narrow-puzzle-2x3-v1',
+    entry_point='pcgrl.dungeon.DungeonEnv:DungeonEnv',
+        kwargs={"seed" : 42,
+            "rep" : Behaviors.NARROW_PUZZLE.value,
+            "path" : None,
+            "save_logger" : False,
+            "save_image_level" : False,
+            "show_logger" : False,
+            "rendered" : True,
+            "max_changes" : 61,
+            "action_change" : True,
+            "action_rotate" : False,
+            "agent" : Experiment.AGENT_HEQHP.value,
+            "reward_change_penalty" : -0.1,            
+            "board" : (2, 3),
+            "piece_size" : 8}
+            
+)
+
+register(
+    id='dungeon-narrow-puzzle-2x3-v2',
+    entry_point='pcgrl.dungeon.DungeonEnv:DungeonEnv',
+        kwargs={"seed" : 42,
+            "rep" : Behaviors.NARROW_PUZZLE.value,
+            "path" : None,
+            "save_logger" : False,
+            "save_image_level" : False,
+            "show_logger" : False,
+            "rendered" : True,
+            "max_changes" : 61,
+            "action_change" : True,
+            "action_rotate" : True,
+            "agent" : Experiment.AGENT_HEQHP.value,
+            "reward_change_penalty" : -0.1,            
+            "board" : (2, 3),
+            "piece_size" : 8}
+            
+)
+
 
 register(
     id='zelda-narrow-puzzle-2x3-v0',
@@ -143,15 +188,16 @@ register(
     kwargs={"seed" : 42,
             "rep" : Behaviors.NARROW_PUZZLE.value,
             "path" : None,
-            "save_logger" : True,
+            "save_logger" : False,
             "save_image_level" : False,
             "show_logger" : False,
             "rendered" : True,
+            "max_changes" : 61,
             "action_change" : False,
             "action_rotate" : False,
             "agent" : Experiment.AGENT_HEQHP.value,
-            "reward_change_penalty" : -1,            
-            "board" : (3, 2),
+            "reward_change_penalty" : -0.1,            
+            "board" : (2, 3),
             "piece_size" : 8}
 )
 

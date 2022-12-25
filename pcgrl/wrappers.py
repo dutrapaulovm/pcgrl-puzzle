@@ -390,11 +390,11 @@ class SegmentWrapper(gym.Wrapper):
             self.env.observation_space, spaces.Dict
         ), "MapWrapper is only usable with dict observations."                
                 
-        assert not self.env.agent is None , 'Agent can''t be None'               
+        assert not self.env.agent_behavior is None , 'Agent can''t be None'               
         self._set_action_space()                         
         assert not self.action_space is None , 'Action Space can''t be None'               
-        grid = self.env.agent.grid
-        total_pieces = self.env.agent.total_pieces
+        grid = self.env.agent_behavior.grid
+        total_pieces = self.env.agent_behavior.total_pieces
         self.observation_space = spaces.Box( low = 0, high = total_pieces, shape = grid.shape, dtype=np.int32)
 
     def _set_action_space(self):
@@ -413,7 +413,7 @@ class SegmentWrapper(gym.Wrapper):
         return self.observation(obs), reward, done, info
             
     def observation(self, obs):
-        grid = self.env.agent.grid        
+        grid = self.env.agent_behavior.grid        
         return grid
 
 class SVDObservationWrapper(gym.core.ObservationWrapper):

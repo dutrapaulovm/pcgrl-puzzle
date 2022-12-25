@@ -24,6 +24,7 @@ class SMBEnv(BasePCGRLEnv):
                  action_change = False, 
                  action_rotate = False, 
                  agent = None,
+                 max_changes = 61,
                  reward_change_penalty = None,                 
                  piece_size = 8, 
                  board = (6, 1), 
@@ -39,11 +40,16 @@ class SMBEnv(BasePCGRLEnv):
         self.action_change = action_change  
         self.action_rotate = action_rotate      
         super(SMBEnv, self).__init__(seed = seed, env_rewards=env_rewards,
-            game = game, action_change=action_change, action_rotate=action_rotate,
-            rendered = rendered,
-            reward_change_penalty=reward_change_penalty,
-            agent=agent,
-                 save_image_level = save_image_level, save_logger=save_logger, show_logger=show_logger, rep=rep, path=path, piece_size = piece_size, board = board, path_models = path_models, callback = callback)
+                                    game = game, 
+                                    action_change=action_change, 
+                                    action_rotate=action_rotate,
+                                    rendered = rendered,
+                                    reward_change_penalty=reward_change_penalty,
+                                    agent=agent,
+                                    max_changes=max_changes,
+                                    save_image_level = save_image_level, 
+                                    save_logger=save_logger, 
+                                    show_logger=show_logger, rep=rep, path=path, piece_size = piece_size, board = board, path_models = path_models, callback = callback)
         self.current_reward   = 0
         self.counter_done     = 0        
         self.cols = 60

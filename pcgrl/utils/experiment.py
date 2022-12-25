@@ -263,7 +263,7 @@ class ExperimentManager(object):
             reward_change_penalty = None,
             piece_size = 8,
             env_rewards = False,            
-            envs = [Game.ZELDA.value, Game.MINIMAP.value, Game.MAZECOIN.value, Game.MAZE.value, Game.DUNGEON.value],
+            envs = [Game.ZELDA.value, Game.MAZECOINLOWMAPS.value, Game.DUNGEON.value],
             representations = [Behaviors.NARROW_PUZZLE.value, Behaviors.WIDE_PUZZLE.value],
             observations = [WrappersType.MAP.value],              
             agent   = [Experiment.AGENT_HHP.value], 

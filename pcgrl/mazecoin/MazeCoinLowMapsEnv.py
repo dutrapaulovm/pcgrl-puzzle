@@ -18,6 +18,7 @@ class MazeCoinLowMapsEnv(BasePCGRLEnv):
                 action_change = False, 
                 action_rotate = False, 
                 agent = None,
+                max_changes = 61,
                 reward_change_penalty = None,
                 piece_size = 8, 
                 board = (3,2), 
@@ -43,6 +44,7 @@ class MazeCoinLowMapsEnv(BasePCGRLEnv):
                                                  action_rotate=action_rotate,                                          
                                                  rendered=rendered,
                                                  agent=agent,
+                                                 max_changes = max_changes,
                                                  reward_change_penalty = reward_change_penalty,
                                                  path_models = path_models, callback = callback)
         self.current_reward   = 0

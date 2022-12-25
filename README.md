@@ -76,4 +76,6 @@ while t < 1000:
 
 ## Traning and Inference
 
-You can train and inference using the [experiment.py](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/pcgrl/utils/experiment.py). You can configure the train and inference for different environments and agents. A  complete code you can see in the file [test_experiment.py](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/pcgrl/utils/test_experiment.py)
+You can train and inference using the [experiment.py](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/pcgrl/utils/experiment.py). You can configure the train and inference for different environments and agents. A  complete code you can see in the file [test_experiment.py](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/pcgrl/utils/test_experiment.py).
+
+Here you can see a simple code for traning agents: [simple_trainv1.py](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/simple_trainv1.py). This code use Stable Baselines3 [PPO](https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html) algorithm for training. 

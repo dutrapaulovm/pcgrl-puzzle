@@ -38,12 +38,13 @@ class BasePCGRLEnv(PCGRLEnv):
                 env_rewards = False,
                 rendered = False,
                 agent = None,
+                max_changes = 61,
                 reward_change_penalty = None,
                 path_models = None, callback = BasePCGRLCallback()):
         
         self.action_change  = action_change
         self.action_rotate  = action_rotate
-        self.agent          = agent
+        self.agent_behavior = None
         self.segment        = 0
         self.max_segment    = 0
         self.representation = rep  
@@ -51,14 +52,20 @@ class BasePCGRLEnv(PCGRLEnv):
         self.piece_size     = piece_size            
         self.board = board        
         self.path_models = path_models
-        super(BasePCGRLEnv, self).__init__(name = name, seed = seed, game = game, save_logger = save_logger, show_logger=show_logger, path=path, callback = callback)                
+        super(BasePCGRLEnv, self).__init__(name = name, 
+                                           seed = seed, 
+                                           game = game, 
+                                           max_changes = max_changes,
+                                           save_logger = save_logger, 
+                                           show_logger=show_logger, 
+                                           path=path, 
+                                           callback = callback)                
         self.factor_reward    =  factor_reward
         self.reward_game      = 0        
         self.exp_rpg          = 0.01
         self.max_exp_rpg      = 0.80        
         self.experience_inc   = 0.0002
-        self.counter_done     = 0        
-        #self.entropy_min      = 1.80        
+        self.counter_done     = 0
         self.save_image_level = save_image_level                                              
         self._reward = 0
         self.reward_best_done_bonus = 50
@@ -75,23 +82,23 @@ class BasePCGRLEnv(PCGRLEnv):
         self.entropy_min = calc_entropy(n_repetead = 2, size=board)                    
 
         self.max_segment = 6
-        self.exp = Experiment.AGENT_HHP.value
+        self.exp = agent
         self.current_piece = []
         self.env_rewards = env_rewards       
     
     def create_action_space(self):           
         path_piece = os.path.join(PCGRLPUZZLE_MAP_PATH, self.path_models)            
         
-        self.agent  = LevelDesignerAgentBehavior(env = self, 
+        self.agent_behavior  = LevelDesignerAgentBehavior(env = self, 
                             piece_size=(self.piece_size, self.piece_size), 
                             rep = self.representation, 
                             path_pieces = path_piece, 
                             action_change=self.action_change, 
                             action_rotate=self.action_rotate)
 
-        self.max_cols_piece = self.agent.max_cols
-        self.max_rows_piece = self.agent.max_rows            
-        self.action_space   = self.agent.action_space
+        self.max_cols_piece = self.agent_behavior.max_cols
+        self.max_rows_piece = self.agent_behavior.max_rows            
+        self.action_space   = self.agent_behavior.action_space
         self.max_segment = int( self.max_cols_piece * self.max_rows_piece )
         self._reward_agent  = 0
         return self.action_space                 
@@ -109,14 +116,14 @@ class BasePCGRLEnv(PCGRLEnv):
         self.segment = 0
         self.game.reset(self.np_random)                          
         self.counter_changes   = 0          
-        self.current_stats = self.agent.get_stats()
+        self.current_stats = self.agent_behavior.get_stats()
         obs = OrderedDict({
             "map"   : self.game.map.copy()
         })
         self._reward = 0
         self._cumulative_reward = 0
-        self.agent.reset()
-        self.last_pieces = self.agent.grid
+        self.agent_behavior.reset()
+        self.last_pieces = self.agent_behavior.grid
         self.current_piece = []
         return obs
 
@@ -124,13 +131,13 @@ class BasePCGRLEnv(PCGRLEnv):
         
         self.old_stats = self.current_stats        
         
-        self._reward_agent, change, self.current_piece = self.agent.step(action)
+        self._reward_agent, change, self.current_piece = self.agent_behavior.step(action)
         
-        obs = self.agent.get_current_observation({})
+        obs = self.agent_behavior.get_current_observation({})
 
         if change > 0:
             self.counter_changes += change            
-            self.current_stats = self.agent.get_stats()    
+            self.current_stats = self.agent_behavior.get_stats()    
             self.segment += 1
 
         return obs
@@ -176,7 +183,7 @@ class BasePCGRLEnv(PCGRLEnv):
     def _get_done(self, actions = None):
         
         done_game = self.game.is_done(self.current_stats)
-        self.is_done_success = done_game and self.agent.is_done()
+        self.is_done_success = done_game and self.agent_behavior.is_done()
 
         done = self.is_done_success
 
@@ -192,16 +199,16 @@ class BasePCGRLEnv(PCGRLEnv):
         self.info["counter_done_interations"] = self.counter_done_interations
         self.info["counter_done_max_changes"] = self.counter_done_max_changes
         self.info["is_done_success"] = self.is_done_success
-        self.info["agent"] = self.agent.get_info()
+        self.info["agent"] = self.agent_behavior.get_info()
 
         if (self.is_done_success):
             self.last_map = self.game.map            
-            self.last_pieces = self.agent.grid
+            self.last_pieces = self.agent_behavior.grid
         
-        self.info["segments"] = self.agent.grid.flatten()       
+        self.info["segments"] = self.agent_behavior.grid.flatten()       
         
         if (self.is_done_success or done):
-            self.info["entropy"] = entropy(self.agent.grid)
+            self.info["entropy"] = entropy(self.agent_behavior.grid)
             self.info["entropy_map"] = entropy(self.game.map)
             
         return done
@@ -253,7 +260,7 @@ class BasePCGRLEnv(PCGRLEnv):
                 else:
                     reward = self.reward_change_penalty * self.factor_reward                               
             else:   
-                reward = entropy(self.agent.grid) * self.factor_reward
+                reward = entropy(self.agent_behavior.grid) * self.factor_reward
         elif (self.exp == Experiment.AGENT_HHPD.value):            
             if (not self.is_done_success):
                 if self.reward_change_penalty is None:
@@ -261,7 +268,7 @@ class BasePCGRLEnv(PCGRLEnv):
                 else:
                     reward = self.reward_change_penalty  * self.factor_reward
             else:
-                reward = (entropy(self.agent.grid) + self._done_bonus) * self.factor_reward
+                reward = (entropy(self.agent_behavior.grid) + self._done_bonus) * self.factor_reward
         elif (self.exp == Experiment.AGENT_HEQHP.value):
             if (not self.is_done_success):
                 if self.reward_change_penalty is None:
@@ -269,7 +276,7 @@ class BasePCGRLEnv(PCGRLEnv):
                 else:
                     reward = self.reward_change_penalty * self.factor_reward
             else:          
-                e = entropy(self.agent.grid)
+                e = entropy(self.agent_behavior.grid)
                 r = (e**math.pi - self.entropy_min**math.pi)                
                 f = 1                                                                                                                                                                                                 
                 reward = (((r + sign(r)) * f)) * self.factor_reward                    
@@ -280,7 +287,7 @@ class BasePCGRLEnv(PCGRLEnv):
                 else:
                     reward = self.reward_change_penalty * self.factor_reward
             else:          
-                e = entropy(self.agent.grid)
+                e = entropy(self.agent_behavior.grid)
                 r = (e**math.pi - self.entropy_min**math.pi)
                 f = 1.0
                 reward = (((r + sign(r)) * f) + self._done_bonus) * self.factor_reward
@@ -289,11 +296,12 @@ class BasePCGRLEnv(PCGRLEnv):
             self._compute_extra_rewards()
             reward += self.reward_game
 
+        print("Agent: ", self.exp)
         print("Reward: ", reward)   
         print("Max Entropy", self.max_entropy)     
         print("Min Entropy", self.entropy_min)     
-        print("Entropy", entropy(self.agent.grid))
-        print("Pieces: ", self.agent.grid)
+        print("Entropy", entropy(self.agent_behavior.grid))
+        print("Pieces: ", self.agent_behavior.grid)
         print("Action change: ", self.action_change)
         print("Changes: ", self.counter_changes)
         print("Piece Penalty: ", self._segment_penalty)                                                            
@@ -408,7 +416,7 @@ class BasePCGRLEnv(PCGRLEnv):
         r = 0.0
         #total_pieces = min( ((self.max_cols_piece * self.max_rows_piece) * 2) + 5, self.max_changes)
         if self.is_done_success: #and self.counter_changes <= total_pieces:            
-            e = round(entropy(self.agent.grid), 2)
+            e = round(entropy(self.agent_behavior.grid), 2)
             if e >= self.max_entropy:
                 r += self.reward_best_done_bonus
             elif e >= self.entropy_min:
