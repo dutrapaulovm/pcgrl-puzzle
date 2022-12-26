@@ -79,3 +79,29 @@ while t < 1000:
 You can train and inference using the [experiment.py](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/pcgrl/utils/experiment.py). You can configure the train and inference for different environments and agents. A  complete code you can see in the file [test_experiment.py](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/pcgrl/utils/test_experiment.py).
 
 Here you can see a simple code for traning agents: [simple_trainv1.py](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/simple_trainv1.py). This code use Stable Baselines3 [PPO](https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html) algorithm for training. 
+
+### Simple training
+```python
+from pcgrl import *
+from pcgrl.wrappers import *
+from stable_baselines3 import PPO
+
+if __name__ == '__main__':
+    
+    env = gym.make('mazecoin-narrow-puzzle-2x3-v0')
+    env = SegmentWrapper(env)
+    
+    model = PPO("MlpPolicy", env, verbose=1)
+    model.learn(total_timesteps=25000)
+    model.save("ppo_mazecoin")
+
+    del model # remove to demonstrate saving and loading
+
+    model = PPO.load("ppo_mazecoin")
+
+    obs = env.reset()
+    while True:
+        action, _states = model.predict(obs)
+        obs, rewards, dones, info = env.step(action)
+        env.render()
+```
