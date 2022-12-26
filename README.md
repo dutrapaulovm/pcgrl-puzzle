@@ -80,7 +80,7 @@ You can train and inference using the [experiment.py](https://github.com/dutrapa
 
 Here you can see a simple code for traning agents: [simple_trainv1.py](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/simple_trainv1.py). This code use Stable Baselines3 [PPO](https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html) algorithm for training. 
 
-### Simple training
+### [Simple training](https://github.com/dutrapaulovm/pcgrl-puzzle/blob/main/simple_trainv1.py)
 ```python
 from pcgrl import *
 from pcgrl.wrappers import *
