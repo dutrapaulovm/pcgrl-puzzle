@@ -6,6 +6,8 @@ The initial results is covered in the paper: [Procedural Content Generation usin
 
 ## Python packages
 
+All the experiments has been tested using Python 3.7.2
+
 It is recommended to use a virtual environment using anaconda or similar.
 
 To install the required python packages, run
