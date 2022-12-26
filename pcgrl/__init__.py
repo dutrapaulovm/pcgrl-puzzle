@@ -201,6 +201,44 @@ register(
             "piece_size" : 8}
 )
 
+register(
+    id='zelda-narrow-puzzle-2x3-v1',
+    entry_point='pcgrl.zelda.ZeldaEnv:ZeldaEnv',
+    kwargs={"seed" : 42,
+            "rep" : Behaviors.NARROW_PUZZLE.value,
+            "path" : None,
+            "save_logger" : False,
+            "save_image_level" : False,
+            "show_logger" : False,
+            "rendered" : True,
+            "max_changes" : 61,
+            "action_change" : True,
+            "action_rotate" : False,
+            "agent" : Experiment.AGENT_HEQHP.value,
+            "reward_change_penalty" : -0.1,            
+            "board" : (2, 3),
+            "piece_size" : 8}
+)
+
+register(
+    id='zelda-narrow-puzzle-2x3-v2',
+    entry_point='pcgrl.zelda.ZeldaEnv:ZeldaEnv',
+    kwargs={"seed" : 42,
+            "rep" : Behaviors.NARROW_PUZZLE.value,
+            "path" : None,
+            "save_logger" : False,
+            "save_image_level" : False,
+            "show_logger" : False,
+            "rendered" : True,
+            "max_changes" : 61,
+            "action_change" : True,
+            "action_rotate" : True,
+            "agent" : Experiment.AGENT_HEQHP.value,
+            "reward_change_penalty" : -0.1,            
+            "board" : (2, 3),
+            "piece_size" : 8}
+)
+
 class Game(Enum):                 
     MAZE                           = "Maze"
     MAZECOIN                       = "MazeCoin"                  

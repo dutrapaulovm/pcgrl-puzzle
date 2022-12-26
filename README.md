@@ -53,7 +53,11 @@ The environments listed below are implemented in the [pcgrl-puzzle](/pcgrl-puzzl
 2. 'mazecoin-narrow-puzzle-2x3-v1', 
 3. 'mazecoin-narrow-puzzle-2x3-v2',
 4. 'dungeon-narrow-puzzle-2x3-v0' 
-5. 'zelda-narrow-puzzle-2x3-v0'
+5. 'dungeon-narrow-puzzle-2x3-v1' 
+6. 'dungeon-narrow-puzzle-2x3-v2' 
+7. 'zelda-narrow-puzzle-2x3-v0'
+8. 'zelda-narrow-puzzle-2x3-v1'
+9. 'zelda-narrow-puzzle-2x3-v2'
 
 ### Simple example
 
