@@ -646,7 +646,6 @@ def A_star(graph, start, goal, pathMap):
         
     return False
 
-
 def mat2graph(mat):
     rows = len(mat)
     cols = len(mat[0])
@@ -657,4 +656,4 @@ def mat2graph(mat):
                 for dx, dy in [(-1, 0), (1, 0), (0, 1), (0, -1)]:
                     if 0 <= x+dx < rows and 0 <= y+dy < cols and mat[x+dx][y+dy] == True:
                         graph[(x, y)].append((x+dx, y+dy))
-    return graph   
+    return graph

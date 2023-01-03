@@ -181,7 +181,6 @@ register(
             
 )
 
-
 register(
     id='zelda-narrow-puzzle-2x3-v0',
     entry_point='pcgrl.zelda.ZeldaEnv:ZeldaEnv',

@@ -388,7 +388,7 @@ class SegmentWrapper(gym.Wrapper):
         
         assert isinstance(
             self.env.observation_space, spaces.Dict
-        ), "MapWrapper is only usable with dict observations."                
+        ), "SegmentWrapper is only usable with dict observations."                
                 
         assert not self.env.agent_behavior is None , 'Agent can''t be None'               
         self._set_action_space()                         

@@ -341,8 +341,6 @@ class ExperimentManager(object):
         
         if name_game == Game.MAZE.value:                         
             singleEnv = MazeEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size, env_rewards = self.env_rewards)
-        elif name_game == Game.MAZECOIN.value:                         
-            singleEnv = MazeCoinEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)                                  
         elif name_game == Game.MAZECOINLOWMAPS.value:                         
             singleEnv = MazeCoinLowMapsEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size, env_rewards = self.env_rewards)                     
         elif name_game == Game.DUNGEON.value:             

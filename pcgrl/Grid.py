@@ -16,7 +16,7 @@ class Grid:
     Grid represents a world that has coordinate X and Y.    
     """
     def __init__(self, sizeX = 0, sizeY = 0, default_value = -1):
-        self.sizeX  = sizeX;
+        self.sizeX  = sizeX
         self.sizeY = sizeY;        
         self.default_value = default_value
         self._create_grid()
@@ -50,7 +50,7 @@ class Grid:
                 if (checkX >= 0 and checkX < self.sizeX and checkY >= 0 and checkY < self.sizeY):
                     neighbours.append(self.data[checkX, checkY])
 
-        return neighbours;
+        return neighbours
 
     def resize(self, sizeX, sizeY, default_value = - 1):
         """[Resize this grid]
@@ -60,8 +60,8 @@ class Grid:
             sizeY ([int]): Size in coordinate Y
             default_value (int, optional): Defaul value value for all positions. Defaults to -1.
         """
-        self.sizeX  = sizeX;
-        self.sizeY = sizeY;        
+        self.sizeX  = sizeX
+        self.sizeY = sizeY        
         self.default_value = default_value
         self._create_grid()
         
@@ -74,7 +74,7 @@ class Grid:
             value (any): value for coordinates X and Y
             blocked (bool, optional): Set if position is blocked. Defaults to False.
         """
-        self.data[x, y] = Node(x=x, y=y, value=value, blocked=blocked);
+        self.data[x, y] = Node(x=x, y=y, value=value, blocked=blocked)
 
     def get(self, x, y):        
-        return self.data[x, y];
+        return self.data[x, y]
