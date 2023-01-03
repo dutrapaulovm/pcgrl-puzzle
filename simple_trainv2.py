@@ -8,7 +8,7 @@ if __name__ == '__main__':
     
     env = gym.make('mazecoin-narrow-puzzle-2x3-v0')
     env = SegmentWrapper(env)
-    
+
     #PPO parameters
     total_timesteps = 1000
     learning_rate   = 3e-4
