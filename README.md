@@ -126,7 +126,7 @@ if __name__ == '__main__':
     env = SegmentWrapper(env)
 
     #PPO parameters
-    total_timesteps = 1000
+    total_timesteps = 25000
     learning_rate   = 3e-4
     n_steps         = 2048
     gamma           = 0.99
@@ -143,7 +143,7 @@ if __name__ == '__main__':
                             learning_rate = learning_rate,       
                             policy_kwargs = policy_kwargs, verbose=1)
 
-    model.learn(total_timesteps=25000)
+    model.learn(total_timesteps=total_timestepsvc )
     model.save("ppo_mazecoin")
 
     del model # remove to demonstrate saving and loading
