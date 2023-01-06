@@ -51,7 +51,6 @@ from pcgrl import Grid
 from pcgrl.wrappers import RGBToGrayScaleObservationWrapper
 from pcgrl.wrappers import MapWrapper
 from pcgrl.wrappers import SegmentWrapper
-from pcgrl.wrappers import OneHotEncodingWrapper
 from pcgrl.wrappers import ActionRepeatWrapper
 from pcgrl.wrappers import EnvInfo
 from pcgrl.wrappers import ExperimentMonitor

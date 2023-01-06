@@ -349,36 +349,7 @@ class MapWrapper(gym.Wrapper):
         
     def observation(self, obs):
         map = self.env.game.map
-        return map
-
-class HashWrapper(gym.Wrapper):
-    def __init__(self, env):
-        super().__init__(env)  
-        self.action_space = env.action_space
-        self.observation_space = spaces.Box(low=0, high=1, dtype=np.uint32, shape=(9,))
-        
-    def reset(self):        
-        obs = self.env.reset()        
-        return self.observation(obs)
-            
-    def step(self, action):                                              
-        obs, reward, done, info = self.env.step(action)                                
-        return self.observation(obs), reward, done, info
-        
-    def observation(self, obs):           
-        h = self.hash(obs)             
-        return [h]
-    
-    def hash(self, obs, size=16):
-        """Compute a hash that uniquely identifies the current state of the environment.
-        :param size: Size of the hashing
-        """
-        sample_hash = hashlib.sha256()        
-        to_encode = [obs["pos"], obs["tiles"], obs["map"]]
-        for item in to_encode:            
-            sample_hash.update(str(item).encode('utf8'))
-            
-        return sample_hash.hexdigest()[:size]        
+        return map      
         
 class SegmentWrapper(gym.Wrapper):
     
@@ -413,41 +384,8 @@ class SegmentWrapper(gym.Wrapper):
         return self.observation(obs), reward, done, info
             
     def observation(self, obs):
-        grid = self.env.agent_behavior.grid        
+        grid = self.env.agent_behavior.grid
         return grid
-
-class SVDObservationWrapper(gym.core.ObservationWrapper):
-    """
-    Wrapper to use Convert RGB to Grayscale observation and resize  the image    
-    """
-    def __init__(self, env, shape = 84, rank = 5):
-        super().__init__(env)               
-
-        if isinstance(shape, int):
-            shape = (shape, shape)
-        assert all(x > 0 for x in shape), shape
-        self.shape = tuple(shape)   
-        self.rank = rank     
-        self.action_space = self.env.action_space        
-        self.observation_space = spaces.Box(low=0, high=255, shape=self.shape, dtype=np.uint8)        
-
-        assert not self.action_space is None , 'Action Space can''t be None'
-        assert not self.observation_space is None , 'Observatio Space can''t be None'
-        
-    def reset(self):        
-        obs = self.env.reset()        
-        return self.observation(obs)
-            
-    def step(self, action):                                        
-        obs, reward, done, info = self.env.step(action)                                
-        return self.observation(obs), reward, done, info        
-
-    def observation(self, obs):                            
-        u, s, v = np.linalg.svd(obs, full_matrices=False)                                      
-        obs = cv2.resize(u, self.shape, interpolation=cv2.INTER_AREA)               
-        obs = np.reshape(obs, self.shape)                    
-        cv2.imshow('Game', obs)        
-        return obs
 
 class CV2ImgShowWrapper(gym.core.ObservationWrapper):
 
@@ -504,7 +442,7 @@ class RGBToGrayScaleObservationWrapper(gym.core.ObservationWrapper):
     """
     Wrapper to use Convert RGB to Grayscale observation and resize  the image    
     """
-    def __init__(self, env, shape):
+    def __init__(self, env, shape = (84, 84)):
         super().__init__(env)               
 
         if isinstance(shape, int):
@@ -514,58 +452,34 @@ class RGBToGrayScaleObservationWrapper(gym.core.ObservationWrapper):
         self.action_space = self.env.action_space        
         self.observation_space = spaces.Box(low=0, high=255, shape=self.shape, dtype=np.uint8)
 
-        #self.observation_space = spaces.Box(low=0, high=255, shape=shape, dtype=np.uint8)
-
         assert not self.action_space is None , 'Action Space can''t be None'
         assert not self.observation_space is None , 'Observatio Space can''t be None'
         
     def reset(self):        
-        obs = self.env.reset()        
+        obs = self.env.reset()
+        obs = self.env.game.render_rgb()           
         return self.observation(obs)
             
     def step(self, action):                                        
         obs, reward, done, info = self.env.step(action)                                
+        obs = self.env.game.render_rgb()             
         return self.observation(obs), reward, done, info        
 
-    def observation(self, obs):
-        gray    = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)         
-        obs = cv2.resize(gray, (84, 84), interpolation=cv2.INTER_AREA)               
-        obs = np.reshape(obs, self.shape)    
-        obs = np.asarray(obs, dtype=np.uint8)                           
+    def observation(self, obs):        
+        gray = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)         
+        obs  = cv2.resize(gray, (84, 84), interpolation=cv2.INTER_AREA)               
+        obs  = np.reshape(obs, self.shape)    
+        obs  = np.asarray(obs, dtype=np.uint8)                           
         #cv2.imshow('Game', obs) 
-        return obs
-    
-class OneHotEncodingWrapper(gym.ObservationWrapper):
-    """
-    Wrapper to convert the map observation to one hot enconding
-    """
-    def __init__(self, env):
-        super().__init__(env)
-        
-        self.action_space = self.env.action_space
-        self.observation_space = self.env.observation_space           
-        
-        self.key = "map"
-        
-        shape = self.observation_space[self.key].shape
-        self.y = shape[0]
-        self.x = shape[1]
-        self.z = self.observation_space[self.key].high.max() - self.observation_space[self.key].low.min() + 1                
-        self.observation_space =  spaces.Box(low=0, high=1, shape=(self.y, self.x, self.z), dtype=np.uint32)
-        
-        assert not self.action_space is None , 'Action Space can''t be None'               
-        assert not self.observation_space is None , 'Observation Space can''t be None'                       
-        
-    def observation(self, observation):            
-        observation = np.array(observation[self.key])        
-        observation = np.eye(self.z)[observation]          
-        return observation
+        return obs   
             
 class WrappersType(Enum):
+    """
+    Observation space of the environment
+    """    
     RGB = "RGB"
     MAP = "map"
-    SEGMENT  = "segment"
-    ONEHOT = "onehot"    
+    SEGMENT  = "segment"      
 
     def __str__(self):
         return format(self.value)                                            
@@ -585,8 +499,5 @@ def make_env(env, observation = WrappersType.MAP.value):
 
     elif (observation == WrappersType.SEGMENT.value):
         _env = SegmentWrapper(env)
-        
-    elif (observation == WrappersType.ONEHOT.value):
-        _env = OneHotEncodingWrapper(env)        
                                 
     return _env

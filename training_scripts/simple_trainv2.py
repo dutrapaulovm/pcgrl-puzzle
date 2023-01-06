@@ -7,6 +7,8 @@ import torch as th
 if __name__ == '__main__':
     
     env = gym.make('mazecoin-narrow-puzzle-2x3-v0')
+    env.seed(42)    
+    #Observation space for the environment
     env = SegmentWrapper(env)
 
     #PPO parameters

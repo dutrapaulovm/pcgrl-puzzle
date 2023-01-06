@@ -27,7 +27,7 @@ from pcgrl.Utils import clear_console
 
 from pcgrl.mazecoin import MazeCoinGameProblem
 from pcgrl.utils.experiment import SaveOnBestTrainingRewardCallback
-from pcgrl.wrappers import ExperimentMonitor, MaxStep, RGBToGrayScaleObservationWrapper, ScaledFloatFrame, SVDObservationWrapper, ImageToPyTorch, CV2ImgShowWrapper, BufferWrapper
+from pcgrl.wrappers import ExperimentMonitor, MaxStep, ScaledFloatFrame, ImageToPyTorch, CV2ImgShowWrapper, BufferWrapper
 
 from stable_baselines3 import PPO,DQN
 from stable_baselines3.common.monitor import Monitor
