@@ -21,7 +21,7 @@ class MazeCoinLowMapsEnv(BasePCGRLEnv):
                 max_changes = 61,
                 reward_change_penalty = None,
                 piece_size = 8, 
-                board = (3,2), 
+                board = (2, 3), 
                 env_rewards = False,
                 path_models = "mazecoin-lowmodels/",
                 callback = BasePCGRLCallback()):        

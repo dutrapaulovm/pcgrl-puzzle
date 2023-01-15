@@ -20,7 +20,7 @@ class CustomCNN(BaseFeaturesExtractor):
         # We assume CxHxW images (channels first)
         # Re-ordering will be done by pre-preprocessing or wrapper
         n_input_channels = observation_space.shape[0]
-        act_func = nn.Sigmoid()
+        act_func = nn.ReLU()
         self.cnn = nn.Sequential(
             nn.Conv2d(n_input_channels, 32, kernel_size=8, stride=4),
             act_func,
@@ -39,7 +39,7 @@ class CustomCNN(BaseFeaturesExtractor):
                 th.as_tensor(observation_space.sample()[None]).float()
             ).shape[1]
 
-        self.linear = nn.Sequential(nn.Linear(n_flatten, features_dim), nn.Sigmoid())
+        self.linear = nn.Sequential(nn.Linear(n_flatten, features_dim), nn.ReLU())
 
     def forward(self, observations: th.Tensor) -> th.Tensor:
         return self.linear(self.cnn(observations))
