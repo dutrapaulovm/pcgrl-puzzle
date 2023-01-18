@@ -228,8 +228,10 @@ class SMBGameProblem(GameProblem):
         return map_stats  
 
     def compute_reward(self, new_stats, old_stats):        
-        reward = 0.0
-        agent = self.env.agent              
+        reward = 0.0        
+        
+        """
+        agent = self.env.agent_behavior
         if DoorEntrance.ID in agent.pieces[0] and DoorExit.ID in agent.pieces[agent.total_board_pieces-1]:
             reward = 5
 
@@ -250,7 +252,7 @@ class SMBGameProblem(GameProblem):
         reward += self.range_reward(coins, old_map_stats["Coin"],  self._range_coins["min"],  self._range_coins["max"], 1)
         reward += self.range_reward(door_exit, old_map_stats["DoorExit"], 1, 1, 3)
         reward += self.range_reward(door_entrance, old_map_stats["DoorEntrance"], 1, 1, 3)        
-
+        """
         rewards_info = { }
         return reward, rewards_info                         
 
@@ -275,7 +277,7 @@ class SMBGameProblem(GameProblem):
         
         done = False
         if done_resources:             
-            agent = self.env.agent              
+            agent = self.env.agent_behavior
             if DoorEntrance.ID in agent.pieces[0] and DoorExit.ID in agent.pieces[agent.total_board_pieces-1]:
                 #self.render_map()
                 done = True
@@ -361,12 +363,12 @@ class SMBGameProblem(GameProblem):
             text = "Max segments: " + str(self.env.max_segment)
             self.draw_text_ext(x=16, y=current_line, text=text, color=Color(0,0,0), font=self.fntHUD)                        
             current_line += space_line
-            text = "Segments: " + str(self.env.agent.grid)
+            text = "Segments: " + str(self.env.agent_behavior.grid)
             self.draw_text_ext(x=16, y=current_line, text=text, color=Color(0,0,0), font=self.fntHUD)                        
             current_line += space_line
             text = "Rows: {}, Cols: {} ".format(self.get_rows(), self.get_cols())
             self.draw_text_ext(x=16, y=current_line, text=text, color=Color(0,0,0), font=self.fntHUD)                        
             current_line += space_line            
-            text = "Entropy {}".format(entropy(self.env.agent.grid))
+            text = "Entropy {}".format(entropy(self.env.agent_behavior.grid))
             self.draw_text_ext(x=16, y=current_line, text=text, color=Color(0,0,0), font=self.fntHUD)
             

@@ -33,17 +33,18 @@ class MazeCoinLowMapsEnv(BasePCGRLEnv):
         game.scale    = 2            
         self.action_change = action_change
         self.action_rotate = action_rotate
-        super(MazeCoinLowMapsEnv, self).__init__(seed = seed, game = game, 
-                                                 env_rewards=env_rewards,
+        super(MazeCoinLowMapsEnv, self).__init__(seed = seed, 
+                                                 game = game, 
+                                                 env_rewards = env_rewards,
                                                  save_image_level = save_image_level,
-                                                 save_logger=save_logger, 
-                                                 show_logger=show_logger, rep=rep,
+                                                 save_logger = save_logger, 
+                                                 show_logger = show_logger, rep=rep,
                                                  path=path, piece_size = piece_size, 
                                                  board = board,   
-                                                 action_change=action_change,    
-                                                 action_rotate=action_rotate,                                          
-                                                 rendered=rendered,
-                                                 agent=agent,
+                                                 action_change = action_change,    
+                                                 action_rotate = action_rotate,                                          
+                                                 rendered = rendered,
+                                                 agent = agent,
                                                  max_changes = max_changes,
                                                  reward_change_penalty = reward_change_penalty,
                                                  path_models = path_models, callback = callback)

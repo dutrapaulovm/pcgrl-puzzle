@@ -352,16 +352,7 @@ class ExperimentManager(object):
         elif name_game == Game.MINIMAPLOWMODELS.value:             
             singleEnv = MiniMapLowMapsEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)       
         elif name_game == Game.SMB.value:             
-            singleEnv = SMBEnv(seed = self.seed, 
-                               rep  = representation, 
-                               path = path_experiments, 
-                               save_logger = True, 
-                               save_image_level = save_image_level, 
-                               show_logger = show_logger, 
-                               action_change = action_change, 
-                               board = self.board, 
-                               piece_size = self.piece_size, 
-                               env_rewards = self.env_rewards)
+            singleEnv = SMBEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)
         else:
             singleEnv = gym.make(name_game)
             singleEnv = singleEnv.env            
@@ -378,8 +369,7 @@ class ExperimentManager(object):
         game = singleEnv.game
         singleEnv.exp = agent
         singleEnv.is_render = render
-        singleEnv.entropy_min = self.entropy_min
-        
+        singleEnv.entropy_min = self.entropy_min        
 
         experiment_monitor = ExperimentMonitor(path_experiments)                           
         experiment_monitor.env = singleEnv                

@@ -19,7 +19,7 @@ if __name__ == '__main__':
     reward_low_done_bonus    = 0
     reward_entropy_penalty   = 0
     reward_change_penalty    = -0.1
-    board = (2, 3)
+    board = (1, 8)
     path_results = "F:\Experimentos\Results-new-Factor10"
     seeds = [42]  
     uuid = "-{}-{}".format(max_changes,board)
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     render        = False
     show_hud      = False
     record_video  = False
-    action_change = False
+    action_change = True
     action_rotate = False
     env_rewards   = False
     save_level    = False
@@ -35,12 +35,11 @@ if __name__ == '__main__':
 
     policy_kwargs = dict(net_arch = [64, 64], activation_fn=th.nn.Sigmoid)
 
-
     for seed in seeds:
         representations = [Behaviors.NARROW_PUZZLE.value]
         observations = [WrappersType.SEGMENT.value]                
         #envs = [Game.DUNGEON.value, Game.MAZECOINLOWMAPS.value, Game.ZELDA.value]          
-        envs = [Game.ZELDA.value]          
+        envs = [Game.SMB.value]          
         agents = [Experiment.AGENT_HEQHP.value]
         #agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value]
         
@@ -87,7 +86,7 @@ if __name__ == '__main__':
                                                     entropy_min = entropy_min,  
                                                     piece_size = piece_size,
                                                     action_change=action_change,   
-                                                    action_rotate=action_rotate,
+                                                     action_rotate=action_rotate,
                                                     max_changes=max_changes,                                                                
                                                     env_rewards = env_rewards,
                                                     total_timesteps = total_timesteps, 
