@@ -8,7 +8,7 @@ from pcgrl.PCGRLEnv import PCGRLEnv
 from collections import deque
 
 from pcgrl.callbacks import BasePCGRLCallback
-
+from pcgrl.Rewards import * 
 from pcgrl import PCGRLPUZZLE_MAP_PATH
 
 sign = lambda x: math.copysign(1, x)
@@ -21,6 +21,7 @@ class Experiment(Enum):
     AGENT_HQHPD            = "HQHPD"            
     AGENT_HEQHP            = "HEQHP"            
     AGENT_HEQHPD           = "HEQHPD"            
+    AGENT_HEQHPEX          = "HEQHPDEX"            
     
     def __str__(self):
         return self.value         
@@ -51,7 +52,7 @@ class BasePCGRLEnv(PCGRLEnv):
         self.is_render      = rendered
         self.piece_size     = piece_size            
         self.board = board        
-        self.path_models = path_models
+        self.path_models = path_models        
         super(BasePCGRLEnv, self).__init__(name = name, 
                                            seed = seed, 
                                            game = game, 
@@ -128,7 +129,7 @@ class BasePCGRLEnv(PCGRLEnv):
         return obs
 
     def _do_step(self, action):
-        
+
         self.old_stats = self.current_stats        
         
         self._reward_agent, change, self.current_piece = self.agent_behavior.step(action)
@@ -137,10 +138,39 @@ class BasePCGRLEnv(PCGRLEnv):
 
         if change > 0:
             self.counter_changes += change            
-            self.current_stats = self.agent_behavior.get_stats()    
+            self.current_stats = self.agent_behavior.get_stats()
             self.segment += 1
 
         return obs
+
+    def get_positions(self, tiles, map):        
+        max_row = map.shape[0]
+        max_col = map.shape[1]
+        new_map = []
+        for row in range(max_row):
+            for col in range(max_col):
+                id = int(map[row][col])
+                if id in tiles:
+                    new_map.append((row, col))
+        return new_map
+
+    def _reward_distance(self, segments):
+        
+        map_segments = np.array(segments)
+        n_segments = map_segments.shape[1]        
+        map_segments = set(map_segments.flatten())            
+
+        reward_m = 0
+        reward_e = 0
+
+        for segment in map_segments:
+            positions = self.get_positions([segment], segments)
+            #print(positions)        
+            if len(positions) > 1:    
+                pos_init = positions[0]
+                for row, col in positions:                    
+                    reward_e += (n_segments - euclidean_distance(pos_init, (row, col)))        
+        return -reward_e
 
     def  _compute_extra_rewards(self):
         self.reward_game, rewards_info = self.game.compute_reward(self.current_stats, self.old_stats)                
@@ -184,7 +214,7 @@ class BasePCGRLEnv(PCGRLEnv):
         
         done_game = self.game.is_done(self.current_stats)
         self.is_done_success = done_game and self.agent_behavior.is_done()
-
+        print("Done: ", self.is_done_success)
         done = self.is_done_success
 
         if (self._finished_iterations):
@@ -243,59 +273,62 @@ class BasePCGRLEnv(PCGRLEnv):
 
     def _calc_reward(self):  
         
-        reward = 0        
+        reward = 0
+        kwargs = {
+            'segments'      : self.agent_behavior.grid,
+            'entropy_min'   : self.entropy_min,
+            'factor_reward' : self.factor_reward,
+            'agent_reward'  : self._reward_agent
+        }
 
         if (self.exp == Experiment.AGENT_SS.value):            
             if (not self.is_done_success):
-                if self.reward_change_penalty is None:
-                    reward = self._changes_entropy_penalty * self.factor_reward
-                else:
-                    reward = self.reward_change_penalty  * self.factor_reward
+                reward = self.change_penalty()
             else:   
                 reward = self.max_entropy * self.factor_reward
         elif (self.exp == Experiment.AGENT_HHP.value):
             if (not self.is_done_success):
-                if self.reward_change_penalty is None:
-                    reward =self._changes_entropy_penalty * self.factor_reward
-                else:
-                    reward = self.reward_change_penalty * self.factor_reward                               
-            else:   
+                reward = self.change_penalty()
+            else:
                 reward = entropy(self.agent_behavior.grid) * self.factor_reward
         elif (self.exp == Experiment.AGENT_HHPD.value):            
             if (not self.is_done_success):
-                if self.reward_change_penalty is None:
-                    reward =self._changes_entropy_penalty * self.factor_reward
-                else:
-                    reward = self.reward_change_penalty  * self.factor_reward
+                reward = self.change_penalty()
             else:
                 reward = (entropy(self.agent_behavior.grid) + self._done_bonus) * self.factor_reward
         elif (self.exp == Experiment.AGENT_HEQHP.value):
             if (not self.is_done_success):
-                if self.reward_change_penalty is None:
-                    reward = self._changes_entropy_penalty * self.factor_reward
-                else:
-                    reward = self.reward_change_penalty * self.factor_reward
-            else:          
+                reward = self.change_penalty()
+            else: 
+                x = math.pi
                 e = entropy(self.agent_behavior.grid)
-                r = (e**math.pi - self.entropy_min**math.pi)                
-                f = 1                                                                                                                                                                                                 
+                r = (e**x - self.entropy_min**x)                
+                f = 1
                 reward = (((r + sign(r)) * f)) * self.factor_reward                    
+        elif (self.exp == Experiment.AGENT_HEQHPEX.value):
+            if (not self.is_done_success):
+                reward = self.change_penalty()
+            else: 
+                entropyQuality = EntropyQuality()
+                reward = entropyQuality.compute_reward(**kwargs)
+
+            reward += self._reward_agent
+
         elif (self.exp == Experiment.AGENT_HEQHPD.value):
             if (not self.is_done_success):
-                if self.reward_change_penalty is None:
-                    reward = self._changes_entropy_penalty * self.factor_reward
-                else:
-                    reward = self.reward_change_penalty * self.factor_reward
-            else:          
-                e = entropy(self.agent_behavior.grid)
-                r = (e**math.pi - self.entropy_min**math.pi)
-                f = 1.0
-                reward = (((r + sign(r)) * f) + self._done_bonus) * self.factor_reward
+                reward = self.change_penalty()
+            else: 
+                x = math.pi
+                e = entropy(self.agent_behavior.grid)                
+                r = (e**x - self.entropy_min**x)                
+                f = 10
+                reward = (((r + sign(r)) * f)) * self.factor_reward
+                reward = reward + self._reward_distance(self.agent_behavior.grid)
                 
         if (self.env_rewards):
             self._compute_extra_rewards()
             reward += self.reward_game
-
+        
         print("Agent: ", self.exp)
         print("Reward: ", reward)   
         print("Max Entropy", self.max_entropy)     
@@ -305,6 +338,11 @@ class BasePCGRLEnv(PCGRLEnv):
         print("Action change: ", self.action_change)
         print("Changes: ", self.counter_changes)
         print("Piece Penalty: ", self._segment_penalty)                                                            
+        rd = self._reward_distance(self.agent_behavior.grid)
+        rnei = self._reward_agent#self.reward_neighbors(self.agent_behavior.grid)
+        print("Rewards Distance: " , rd)
+        print("Reward neighbors: " , rnei)
+
         self.info["reward_game"] = self.reward_game
         self.info["reward"] = reward        
         self.info["bonus_factor"] = self._bonus_factor
@@ -314,6 +352,8 @@ class BasePCGRLEnv(PCGRLEnv):
         self.info["done_bonus"] = self._done_bonus        
         #self.info["changes_penalty"] = self._changes_penalty
         self.info["piece_penalty"] = self._segment_penalty
+        self.info["reward_distance"] = rd
+        self.info["reward_neighbors"] = rnei
                 
         self.hist['rewards'].append(reward)
                 
@@ -324,7 +364,33 @@ class BasePCGRLEnv(PCGRLEnv):
         self.add_reward(reward)
 
         return reward 
-    
+
+    def change_penalty(self):
+        reward = 0
+        if self.reward_change_penalty is None:
+            reward = self._changes_entropy_penalty * self.factor_reward
+        else:
+            reward = self.reward_change_penalty * self.factor_reward        
+
+        return reward
+
+    def reward_neighbors(self, segments):
+        n, m = segments.shape
+        map_segments = np.array(segments)        
+        map_segments = list(map_segments.flatten())                    
+        positions = self.get_positions(map_segments, segments)
+
+        reward = 0
+        
+        for row, col in positions:
+            segment = segments[row][col]
+            nei = neighbors(row, col, n-1, m-1)                        
+            for r, c in nei:                
+                if (segments[r][c] != -1) and segments[r][c] == segment and (row != r or col != c):
+                    reward += -2
+
+        return reward
+        
     def scale_action(self, raw_action, min, max):
         """[summary]
         Args:
@@ -376,7 +442,7 @@ class BasePCGRLEnv(PCGRLEnv):
             r = -(1 / math.sqrt( a / b ) * b )
         else:
             r = 0
-        """    
+        """
         return r    
     
     @property

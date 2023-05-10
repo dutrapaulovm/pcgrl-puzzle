@@ -438,6 +438,36 @@ class ScaledFloatFrame(gym.ObservationWrapper):
         #plt.savefig("D:/Results/frame.png")
         return frame
 
+class RGBObservationWrapper(gym.core.ObservationWrapper):
+    """
+    Wrapper to use Convert RGB to Grayscale observation and resize  the image    
+    """
+    def __init__(self, env, shape = (84, 84)):
+        super().__init__(env)               
+
+        if isinstance(shape, int):
+            shape = (shape, shape)
+        assert all(x > 0 for x in shape), shape
+        self.shape = tuple(shape)        
+        self.action_space = self.env.action_space        
+        self.observation_space = spaces.Box(low=0, high=255, shape=self.shape, dtype=np.uint8)
+
+        assert not self.action_space is None , 'Action Space can''t be None'
+        assert not self.observation_space is None , 'Observatio Space can''t be None'
+        
+    def reset(self):        
+        obs = self.env.reset()
+        obs = self.env.game.render_rgb()           
+        return self.observation(obs)
+            
+    def step(self, action):                                        
+        obs, reward, done, info = self.env.step(action)                                
+        obs = self.env.game.render_rgb()             
+        return self.observation(obs), reward, done, info        
+
+    def observation(self, obs):
+        return obs   
+
 class RGBToGrayScaleObservationWrapper(gym.core.ObservationWrapper):
     """
     Wrapper to use Convert RGB to Grayscale observation and resize  the image    

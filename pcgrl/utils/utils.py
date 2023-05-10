@@ -26,6 +26,7 @@ class ActivationFunc(Enum):
     SIGMOID = "Sigmoid"
     ReLU    = "ReLU"
     Tanh    = "Tanh"
+    SoftMax = "Sofmax"
     
     def __str__(self):
         return self.value  

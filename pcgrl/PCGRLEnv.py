@@ -82,7 +82,7 @@ class PCGRLEnv(gym.Env):
         self.current_action = []
         self.old_stats = []
         self.current_stats = []
-        columnsnames = {"reward_game",  "reward",  "discount_reward",  "bonus_factor",  "experience_bonus", "done_bonus", "done_penalty", "reward_experience_bonus", "changes_penalty",  "piece_penalty", "counter_changes", "counter_done", "representation", "counter_done_interations", "counter_done_max_changes", "is_done_success", "agent", "segments", "entropy", "entropy_map","historical", 'rewards_sum', 'discount_rewards'}
+        columnsnames = {"reward_game",  "reward",  "discount_reward",  "bonus_factor",  "experience_bonus", "done_bonus", "done_penalty", "reward_experience_bonus", "changes_penalty",  "piece_penalty", "counter_changes", "counter_done", "representation", "counter_done_interations", "counter_done_max_changes", "is_done_success", "agent", "segments", "entropy", "entropy_map","historical", 'rewards_sum', 'discount_rewards', 'reward_distance', 'reward_neighbors'}
         
         self.results_writer = None        
         
@@ -140,12 +140,11 @@ class PCGRLEnv(gym.Env):
         if (self.game is None):
             raise ValueError('Game can''t is none') 
 
-        self.callback.on_before_step(actions)
+        self.callback.on_before_step(actions)        
         
-        if (self.show_logger):
-            clear_console()
-            print()             
-            
+        clear_console()
+        print()             
+        
         clear_console()
         print("Env name: ", self.name)                               
 

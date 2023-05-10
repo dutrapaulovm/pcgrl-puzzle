@@ -1,5 +1,4 @@
 /// @description Insert description here
-// You can write your code in this editor
 file = load_csv("Map"+string(global.map_id)+".csv");
 var ww = ds_grid_width(file);
 var hh = ds_grid_height(file);

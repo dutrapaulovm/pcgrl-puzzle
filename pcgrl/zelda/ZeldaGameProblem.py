@@ -200,7 +200,7 @@ class ZeldaGameProblem(GameProblem):
 
     def compute_reward(self, new_stats, old_stats):        
         reward = 0.0
-        agent = self.env.agent              
+        #agent = self.env.agent              
         #if DoorEntrance.ID in agent.pieces[0] and DoorExit.ID in agent.pieces[agent.total_board_pieces-1]:
         #    reward = 5
 

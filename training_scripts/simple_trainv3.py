@@ -1,13 +1,16 @@
 from pcgrl import *
 from pcgrl.wrappers import *
 from stable_baselines3 import PPO
+from stable_baselines3.common.utils import set_random_seed
 
 import torch as th
 
 if __name__ == '__main__':
     
-    env =  MazeCoinLowMapsEnv()
-    env.seed(42)    
+    env =  MazeCoinLowMapsEnv(agent=Experiment.AGENT_HEQHP.value, rep=Behaviors.NARROW_PUZZLE.value,
+                              reward_change_penalty=-0.1)
+    set_random_seed(42)
+    env.seed(42) 
     #Observation space for the environment
     env = SegmentWrapper(env)
 

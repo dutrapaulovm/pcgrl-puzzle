@@ -19,14 +19,6 @@ from matplotlib.ticker import MaxNLocator
 import matplotlib.tri as tri
 import numpy as np
 
-import scipy.stats as stats
-import statsmodels.api as sm
-from scipy.stats import norm
-from scipy.stats import uniform
-from scipy.stats import ksone
-from scipy.stats import poisson
-import pandas as pd
-from scipy.stats import t as t_student
 
 linestyle_str = [
     ('solid', 'solid'),      # Same as (0, ()) or '-'
@@ -261,6 +253,7 @@ class PlotResults:
         labels = [key for key in self.data]       
 
         segments_games = {Game.ZELDA.value : 300,                           
+                          Game.ZELDALOWMAPS.value : 150,
                           Game.MINIMAP.value : 300, 
                           Game.MAZECOIN.value : 240, 
                           Game.MAZECOINLOWMAPS.value : 80,
@@ -377,9 +370,10 @@ class PlotResults:
         ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
         # Add some text for labels, title and custom x-axis tick labels, etc.
-        #ax.set_ylabel('% of Levels generated')
-        ax.set_ylabel('% de cenários repetidos')
-        ax.set_xlabel(key)
+        ax.set_ylabel('% of Levels generated')
+        #ax.set_ylabel('% de cenários repetidos')
+        #ax.set_xlabel("Agentes")
+        ax.set_xlabel("Agents")
         #ax.set_title('Número de repetições')
         #ax.set_title('Entropy by game')
         ax.set_xticks(x, labels)        
@@ -413,6 +407,7 @@ class PlotResults:
         labels = [key for key in self.data]       
         fontsize = 12
         segments_games = {Game.ZELDA.value : 300,                           
+                          Game.ZELDALOWMAPS.value : 150,
                           Game.MINIMAP.value : 300, 
                           Game.MAZECOIN.value : 240, 
                           Game.MAZECOINLOWMAPS.value : 80,
@@ -457,9 +452,10 @@ class PlotResults:
                             padding=0, color='black', fontweight='bold', fontsize=fontsize)
 
         # Add some text for labels, title and custom x-axis tick labels, etc.
-        #ax.set_ylabel('% of Segments used', fontsize = 12)
-        ax.set_ylabel('% de Segmentos utilizados', fontsize = 12)
-        ax.set_xlabel('Agentes', fontsize = 12)
+        ax.set_ylabel('% of Segments used', fontsize = 12)
+        #ax.set_ylabel('% de Segmentos utilizados', fontsize = 12)
+        #ax.set_xlabel('Agentes', fontsize = 12)
+        ax.set_xlabel('Agents', fontsize = 12)
         #ax.set_title('Segments used by game', fontsize = 12)
         ax.set_xticks(x, labels, fontsize = 12)        
         
@@ -540,10 +536,10 @@ class PlotResults:
 
 
         # Add some text for labels, title and custom x-axis tick labels, etc.
-        #ax.set_ylabel('% of Levels generated')
-        ax.set_ylabel('% de cenários gerados', fontsize=fontsize)
-        ax.set_xlabel('Agentes', fontsize=fontsize)
-        #ax.set_xlabel('Agents', fontsize=fontsize)
+        ax.set_ylabel('% of Levels generated')
+        #ax.set_ylabel('% de cenários gerados', fontsize=fontsize)
+        #ax.set_xlabel('Agentes', fontsize=fontsize)
+        ax.set_xlabel('Agents', fontsize=fontsize)
         #ax.set_title('Entropia por ambiente')
         #ax.set_title('Entropy by game')
         ax.set_xticks(x, labels, fontsize=fontsize)
@@ -615,7 +611,7 @@ class PlotResults:
             ('loosely dashdotdotted', (0, (3, 10, 1, 10, 1, 10))),
             ('densely dashdotdotted', (0, (3, 1, 1, 1, 1, 1)))]            
         
-        colors = ['orange', 'blue', 'green'] #['#ff000a', '#ff9498', '#0000ff', '#8787fd', '#00ff00', '#85f585']        
+        colors = ['orange', 'blue', 'green', 'red'] #['#ff000a', '#ff9498', '#0000ff', '#8787fd', '#00ff00', '#85f585']        
         
         games = [key for key in self.data]       
         
@@ -677,7 +673,9 @@ class PlotResults:
             med = med.replace(".", ",")
             info ='{},{} e{}'.format(avg, med, std)
             label=r"$H_q = {:.2f}$".format(entropy_min, info).replace(".", ",")
-
+            #print("Games: {}".format(games))
+            #print("\t x: {}, levels {} ".format( len(x), len(levels[i]) ))
+            #print(len(x))
             #np.round_(np.array(df["entropy"]), decimals = 2)
             #ax.axvline(np.mean(levels[i]), color="k", linestyle="dashed", linewidth=3, label="Avg : {:.2f}".format(avg))                                    
             ax.axhline(entropy_min, color="k", linestyle="dashed", linewidth=3, label=label)            
@@ -820,11 +818,11 @@ class PlotResults:
                                     
         ax.set_xticklabels(games, fontsize=16)
         #ax.set_title(stitle)
-        #ax.set_ylabel("Entropy Levels", fontsize=18)
-        ax.set_ylabel("Entropia dos cenários", fontsize=16)
+        ax.set_ylabel("Entropy Levels", fontsize=18)
+        #ax.set_ylabel("Entropia dos cenários", fontsize=16)
         #ax.set_ylabel("Entropia")
-        #ax.set_xlabel("Agents", fontsize=18)
-        ax.set_xlabel("Agentes", fontsize=16)
+        ax.set_xlabel("Agents", fontsize=18)
+        #ax.set_xlabel("Agentes", fontsize=16)
         plt.xticks(fontsize=18)
         plt.yticks(fontsize=18)
         #ax.set_xlabel(xlabel)
@@ -834,7 +832,7 @@ class PlotResults:
         plt.savefig(path+"/"+filename+".pdf")                  
         plt.savefig(path+"/"+filename+".png")                          
         plt.close()
-        
+        """
         fig, ax = plt.subplots()
 
         for i in range(len(levels)):                                  
@@ -860,6 +858,7 @@ class PlotResults:
         plt.savefig(path+"/"+filename2+".pdf")        
         plt.savefig(path+"/"+filename2+".png")             
         plt.close()   
+        """
 
         fig, ax = plt.subplots(figsize=(10, 5))                      
 
@@ -926,11 +925,11 @@ class PlotResults:
                                     
         ax.set_xticklabels(exp, fontsize=16)
         #ax.set_title(stitle)
-        #ax.set_ylabel("Entropy Levels", fontsize=18)
-        ax.set_ylabel("Entropia dos cenários", fontsize=16)
+        ax.set_ylabel("Entropy Levels", fontsize=18)
+        #ax.set_ylabel("Entropia dos cenários", fontsize=16)
         #ax.set_ylabel("Entropia")
-        #ax.set_xlabel("Agents", fontsize=18)
-        ax.set_xlabel("Agentes", fontsize=16)
+        ax.set_xlabel("Agents", fontsize=18)
+        #ax.set_xlabel("Agentes", fontsize=16)
         plt.xticks(fontsize=18)
         plt.yticks(fontsize=18)
         #ax.set_xlabel(xlabel)
@@ -985,7 +984,7 @@ class PlotResults:
     def plot_similarity_levels(self, path, filename):
         print("Generated Similarity")        
         
-        games = [Game.ZELDA.value, Game.MINIMAP.value, Game.MAZECOIN.value,  Game.MAZE.value, Game.SMB.value, Game.DUNGEON.value]                    
+        games = [Game.ZELDA.value, Game.ZELDALOWMAPS.value, Game.MINIMAP.value, Game.MAZECOIN.value,  Game.MAZE.value, Game.SMB.value, Game.DUNGEON.value]                    
         #games = [Game.DUNGEON.value]                    
         
         exp = [key for key in self.data]
@@ -1106,6 +1105,7 @@ class PlotResults:
         #info = ["LevelsRepeated"]
         
         segments_games = {Game.ZELDA.value : 300,                           
+                          Game.ZELDALOWMAPS.value : 150,
                           Game.MINIMAP.value : 300, 
                           Game.MAZECOIN.value : 240, 
                           Game.MAZECOINLOWMAPS.value : 80, 
@@ -1116,7 +1116,7 @@ class PlotResults:
         aux_envs.append("Agent")
         for info in info:
             if envs is None:
-                games = [Game.ZELDA.value, Game.MINIMAP.value, Game.MAZECOIN.value, Game.MAZECOINLOWMAPS.value, Game.MAZE.value, Game.SMB.value, Game.DUNGEON.value, "Agent"]
+                games = [Game.ZELDA.value, Game.ZELDALOWMAPS.value, Game.MINIMAP.value, Game.MAZECOIN.value, Game.MAZECOINLOWMAPS.value, Game.MAZE.value, Game.SMB.value, Game.DUNGEON.value, "Agent"]
             else:
                 games = aux_envs                
                 
@@ -1975,12 +1975,17 @@ class PlotResults:
         
         rewards = []                
         
-        max_entropy = 3.0
-        entropy_min = 2.75
+        #max_entropy = 3.0
+        #entropy_min = 2.75
+
+        max_entropy = 2.58
+        entropy_min = 2.25
+                 
         ent_ = 0
         entropies = []
         epsilon = 0.1       
         r = 0
+        entx = math.pi
         while ent_ <= max_entropy:
 
             entropies.append(ent_)
@@ -1990,7 +1995,7 @@ class PlotResults:
             #a = math.log2(((math.pi / (e  + 0.5)) * e) + 1 )
             #b = math.log2(((math.pi / (e  + 0.5)) * entropy_min) + 1)
             #r = (a - b) * math.pi
-            r = (e**math.pi - entropy_min**math.pi)
+            r = (e**entx - entropy_min**entx) 
             #r = (((e**math.pi)+1) - ((entropy_min**math.pi)+1))
             #print("\t{} : {}".format(a, b))
             f = 1
@@ -2013,15 +2018,15 @@ class PlotResults:
 
         ax.plot([entropy_min], [1.0], 'ro', ms=8, mec='r')                        
         #ax.annotate('-2.458637729', xy=(1.80, -2.458637729), xytext=(1.90, -3.0), fontsize=12 )        
-        #ax.annotate('$\mathrm{HQ} = 2,25$', xy=(entropy_min, 0), xytext=(1.75, 0.5), fontsize=12 )        
-        ax.annotate('$\mathrm{HQ} = 2,75$', xy=(entropy_min, 0), xytext=(2.10, 0.5), fontsize=12 )        
+        ax.annotate('$\mathrm{HQ} = 2,25$', xy=(entropy_min, 0), xytext=(1.75, 0.5), fontsize=12 )        
+        #ax.annotate('$\mathrm{HQ} = 2,75$', xy=(entropy_min, 0), xytext=(2.10, 0.5), fontsize=12 )        
         
-        #plt.yticks([12, 10, 8, 6, 4, 2, 0, -2, -4, -6, -8, -10, -12, -14])                
-        plt.yticks([12, 10, 8, 6, 4, 2, 0, -2, -4, -6, -8, -10, -12, -14,-16,-18,-20,-22,-24,-26])                
+        plt.yticks([12, 10, 8, 6, 4, 2, 0, -2, -4, -6, -8, -10, -12, -14])                
+        #plt.yticks([12, 10, 8, 6, 4, 2, 0, -2, -4, -6, -8, -10, -12, -14,-16,-18,-20,-22,-24,-26])                
         
         #ax.set_ylabel("Entropy Levels", fontsize=16)
-        ax.set_ylabel("Recompensas", fontsize=14)
-        ax.set_xlabel("Entropia", fontsize=14)
+        ax.set_ylabel("Rewards", fontsize=14)
+        ax.set_xlabel("Entropy", fontsize=14)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
 
@@ -2030,7 +2035,7 @@ class PlotResults:
         #plt.xlabel('Entropy')
         #plt.xlabel('Entropia')
         #plt.ylabel('Rewards')
-        plt.ylabel('Recompensas')
+        plt.ylabel('Rewards')
         #stitle = "Entropy quality"
         #plt.title(stitle)
         plt.tight_layout()
@@ -2049,7 +2054,7 @@ def gera_graficos_comparativos(results_dir = "./results/",
                             n_epochs:int = 10,                                          
                             act_func = ActivationFunc.SIGMOID.value,
                             entropy_min:int = 1.80,                            
-                            envs = [Game.ZELDA.value, Game.MINIMAP.value, Game.MAZECOIN.value, Game.MAZE.value, Game.DUNGEON.value],
+                            envs = [Game.ZELDA.value, Game.ZELDALOWMAPS.value, Game.MINIMAP.value, Game.MAZECOIN.value, Game.MAZE.value, Game.DUNGEON.value],
                             representations = [Behaviors.NARROW_PUZZLE.value, Behaviors.WIDE_PUZZLE.value],
                             observations = [WrappersType.MAP.value],              
                             agents   = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HHPD.value, Experiment.AGENT_HEQHP.value, Experiment.AGENT_HEQHPD.value],
@@ -2216,7 +2221,9 @@ def get_agent(version):
     elif version == Experiment.AGENT_HEQHP.value:
         agent = "HQ"        
     elif version == Experiment.AGENT_HEQHPD.value:
-        agent = "HQD"                                                    
+        agent = "HQD"                             
+    elif version == Experiment.AGENT_HEQHPEX.value:
+        agent = "HQEX"                                                                                   
     else:
         agent = "UNKNOW"            
         
@@ -2230,7 +2237,7 @@ def gera_graficos_individuais(results_dir = "./results/",
                             n_epochs:int = 10,                                          
                             act_func = ActivationFunc.SIGMOID.value,
                             entropy_min:int = 1.80,
-                            envs = [Game.ZELDA.value, Game.MINIMAP.value, Game.MAZECOIN.value, Game.MAZE.value, Game.DUNGEON.value],
+                            envs = [Game.ZELDA.value, Game.ZELDALOWMAPS.value, Game.MINIMAP.value, Game.MAZECOIN.value, Game.MAZE.value, Game.DUNGEON.value],
                             representations = [Behaviors.NARROW_PUZZLE.value, Behaviors.WIDE_PUZZLE.value],
                             observations = [WrappersType.MAP.value],              
                             agents   = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HHPD.value, Experiment.AGENT_HEQHP.value, Experiment.AGENT_HEQHPD.value],
@@ -2340,7 +2347,7 @@ def gera_graficos_individuais(results_dir = "./results/",
                             plotResults.plot(title, path_experiments_inference, "inference-bestworst-all-Games"+_rep, entropy_min=entropy_min, n = n_inference)
                             plotResults.plot_bar_segmentused(title, path_experiments_inference, "inference-segments_used-games"+_rep)
                             plotResults.plot_entropy(path_experiments_inference, "Entropy-games"+_rep, title, entropy_min=entropy_min)                            
-                            plotResults.plot_boxplot(path_experiments_inference, "Entropy-games-boxplot"+_rep, "Entropy-games-boxplot-v2"+_rep, title, entropy_min=entropy_min)                            
+                            plotResults.plot_boxplot(path_experiments_inference, "Entropy-games-boxplot"+_rep, "Entropy-games-boxplot-v2"+_rep, title, entropy_min=entropy_min)
                             plotResults.plot_hist(path_experiments_inference, "Entropy-games-hist"+_rep, title)
                             plotResults.plot_hist_changes(path_experiments_inference, "Changes-games-hist"+_rep, title)                            
                             plotResults.plot_density_changes(path_experiments_inference, "Density-games"+_rep, title)
@@ -2356,12 +2363,13 @@ def run_plotter(
               n_epochs:int = 10,                                          
               act_func = ActivationFunc.SIGMOID.value,
               entropy_min:int = 1.80,
-              envs = [Game.ZELDA.value, Game.MINIMAP.value, Game.MAZECOIN.value, Game.MAZE.value, Game.DUNGEON.value],
+              envs = [Game.ZELDA.value, Game.ZELDALOWMAPS.value, Game.MINIMAP.value, Game.MAZECOIN.value, Game.MAZE.value, Game.DUNGEON.value],
               representations = [Behaviors.NARROW_PUZZLE.value, Behaviors.WIDE_PUZZLE.value],
               observations = [WrappersType.MAP.value],              
               agents   = [Experiment.AGENT_HHP.value],
               n_inference:int = 300,
-              seed:int = 1000, uuid = "", language = "pt-br"):
+              board = [[2,3], [2,4]],
+              seed:int = 1000, uuid = "", language = "pt-br", tag = ""):
     """
     gera_graficos_individuais(results_dir = results_dir,
                             total_timesteps = total_timesteps,
@@ -2408,7 +2416,9 @@ def run_plotter(
                                 representations = representations,      
                                 observations    = observations,
                                 seed            = seed,
-                                uuid            = uuid)
+                                board           = board,
+                                uuid            = uuid,
+                                tag             = tag)
     
 
 if __name__ == '__main__':

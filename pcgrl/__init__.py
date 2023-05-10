@@ -244,6 +244,7 @@ class Game(Enum):
     COMBAT                         = "Combat"        
     DUNGEON                        = "Dungeon"
     ZELDA                          = "Zelda"
+    ZELDALOWMAPS                   = "ZeldaLowMaps"
     SMB                            = "SMB"    
     ZELDAV3                        = "ZeldaV3"
     MINIMAP                        = "MiniMap"

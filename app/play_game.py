@@ -50,15 +50,15 @@ if __name__ == "__main__":
 
     steps = 100
     env = gym.make("mazecoinplay-v0") 
-    env = WarpFrame(env)           
-    env = ScaledFloatFrame(env)         
-    env = ClipRewardEnv(env)            
-    env = Monitor(env, filename="monitor.csv")    
-    env = DummyVecEnv([lambda :env])    
-    env = VecFrameStack(env, 4, channels_order='last')    
+    env = WarpFrame(env)
+    env = ScaledFloatFrame(env)
+    env = ClipRewardEnv(env)
+    env = Monitor(env, filename="monitor.csv")
+    env = DummyVecEnv([lambda :env])
+    env = VecFrameStack(env, 4, channels_order='last')
     
     try:                
-        
+        set_random_seed(42)
         path_model = f"{CHECKPOINT_DIR}/best_model"        
         print(f"Loading {path_model}") 
         model = PPO.load(path_model)
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         filename_timeela = "{}/{}.csv".format(path_log, "/Inference Time elapsed") 
         df.to_csv(filename_timeela,  index=False)                        
         
-        env.close()  
+        env.close()
 
     except KeyboardInterrupt:              
         pass
@@ -105,6 +105,4 @@ if __name__ == "__main__":
             pass
             # model.env.close()
         except EOFError:
-            pass                   
-
-    
+            pass   

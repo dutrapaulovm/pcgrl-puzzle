@@ -38,7 +38,7 @@ class Generator:
         self.pos_col  = 0 
         self.curr_row = 0
         self.curr_col = 0        
-                
+
         self.border = border    
         if not loadmap:
             self.load_pieces() 

@@ -126,7 +126,7 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
         offset = env.game.border_offset()
         dim = np.array(env.game.get_dim()).copy()  
         self.current_piece_index = 0             
-        
+        self.show_logger = True
         if (offset[0] > 0 and offset[1] > 0):
             dim[1] = dim[1] - (offset[0] * env.game.tile_height) * 2 
             dim[0] = dim[0] - (offset[1] * env.game.tile_width)  * 2 
@@ -212,7 +212,7 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
         self.current_piece_index = 0    
         return {}
 
-    def is_done(self):
+    def is_done(self):        
         return (-1 not in self.grid)        
 
     def get_info(self):
@@ -231,8 +231,9 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
 
         if (self.representation == Behaviors.NARROW_PUZZLE.value):
             
-            print("Narrow Puzzle: ", action)
-            print()
+            if (self.show_logger):
+                print("Narrow Puzzle: ", action)
+                print()
 
             do_change = True
             do_rotate = self.action_rotate
@@ -252,40 +253,46 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
                     do_change = (action[1] == 1)            
 
             if do_change:
-                print("Alterou: {}-{}".format(action, self.action_change))
+                if (self.show_logger):
+                    print("Alterou: {}-{}".format(action, self.action_change))
                 x = self.generator.curr_col
                 y = self.generator.curr_row
                 piece  = self.grid[y][x]
-                v = [0, 1][piece != act]
-                change += v                  
+                #v = [0, 1][piece != act]
+                #change += v
+                change = 1
                 self.grid[y][x] = act
                                 
-                game.map, piece = self.generator.build_map(game.map, act, offset=self.env.game.border_offset(), rotate = do_rotate, rotate_direction=rotate_direction)
+                game.map, piece = self.generator.build_map(game.map, act, offset=self.env.game.border_offset(), rotate = do_rotate, rotate_direction = rotate_direction)
                 game.clear()
                 game.create_map(game.map)
-                reward = 0#js_divergence(self.last_piece, piece)                
-                self.last_piece = piece                                
+                reward = self.reward_neighbors(self.grid, act, y, x)
+                self.last_piece = piece                                                
                 
-                #p = (self.max_rows * self.generator.curr_row-1) + self.generator.curr_col-1                
                 self.pieces[self.current_piece_index] = piece                 
               
                 self.last_piece = piece
                 self.last_action = act
                 self.current_piece_index += 1
+                print("Current Piece Index: {}, Changes {}".format(self.current_piece_index, change))
+
             else:
-                print("Não Alterou: {}".format(action))
+                if (self.show_logger):
+                    print("Não Alterou: {}".format(action))
                 
-        elif (self.representation == Behaviors.WIDE_PUZZLE.value):                                              
-            print("Wide Puzzle: ", action)
-            print()
+        elif (self.representation == Behaviors.WIDE_PUZZLE.value):  
+            if (self.show_logger):                                            
+                print("Wide Puzzle: ", action)
+                print()
             #try:        
             do_change = True            
             if self.action_change:            
                 do_change = (action[3] == 1)
             reward = 0.0
 
-            if do_change:         
-                print("Alterou")
+            if do_change:       
+                if (self.show_logger):  
+                    print("Alterou")
                 x = action[0]
                 y = action[1]
                 piece  = self.grid[y][x]
@@ -304,7 +311,8 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
                 self.last_action = action[2]
                 self.current_piece_index += 1
             else:
-                print("Não Alterou")   
+                if (self.show_logger):
+                    print("Não Alterou")   
             #except :
              #   print('Ocorreu um erro durante a criação do mapa. Representation {}'.format(self.representation))
                 #print(game.map)            
@@ -314,8 +322,9 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
             #try:                          
             r = []
             change = 0            
-            print("Multi Puzzle: ", action)
-            print()
+            if (self.show_logger):
+                print("Multi Puzzle: ", action)
+                print()
 
             for a in range(len(action)):
                 
@@ -353,6 +362,38 @@ class LevelDesignerAgentBehavior(BaseAgentBehavior):
                 
         return reward, change, piece #obs, reward, done, info  
 
+    def _reward_distance(self, segments):
+        
+        map_segments = np.array(segments)
+        n_segments = map_segments.shape[1]        
+        map_segments = set(map_segments.flatten())            
+
+        reward_m = 0
+        reward_e = 0
+
+        for segment in map_segments:
+            positions = self.get_positions([segment], segments)
+            #print(positions)        
+            if len(positions) > 1:    
+                pos_init = positions[0]
+                for row, col in positions:                    
+                    reward_e += (n_segments - euclidean_distance(pos_init, (row, col)))        
+        return -reward_e
+
+    def reward_neighbors(self, segments, segment, row, col):
+        n, m = segments.shape
+        #map_segments = np.array(segments)        
+        #map_segments = list(map_segments.flatten())                    
+        #positions = get_positions(map_segments, segments)
+        reward = 0
+        #for row, col in positions:
+        #segment = segments[row][col]
+        nei = neighbors(row, col, n-1, m-1)                        
+        for r, c in nei:
+            if (segments[r][c] != -1) and segments[r][c] == segment and (row != r or col != c):
+                reward += -2
+
+        return reward
 
 class AgentBSF(AgentBehavior):
 

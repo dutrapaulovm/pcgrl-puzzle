@@ -266,7 +266,7 @@ class DungeonGameProblem(GameProblem):
                     tile  = Ground(id =Ground.ID, x = col * state_w, y = row * state_h)                    
                     self.addBackground(tile)                   
                 if val == Block.ID:
-                    tile  = Block(id =Block.ID, x = col * state_w, y = row * state_h)                    
+                    tile  = Block(id = Block.ID, x = col * state_w, y = row * state_h)                    
                     self.addBases(tile)                                            
 
     def draw_hud(self, screen):

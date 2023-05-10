@@ -32,10 +32,14 @@ class ExpressiveRangePlot:
                 observations = [WrappersType.MAP.value],              
                 agents   = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HHPD.value, Experiment.AGENT_HEQHP.value, Experiment.AGENT_HEQHPD.value],
                 seed:int = 1000,
-                uuid = ""):
+                board = [2,3],
+                uuid = "",
+                tag = ""):
         self.envs = envs
         self.agents = agents
         self.total_timesteps = total_timesteps
+        self.board = board
+        self.tag = tag
 
         self.path_main_results = os.path.join(os.path.dirname(__file__), results_dir)        
         
@@ -54,11 +58,13 @@ class ExpressiveRangePlot:
 
     def calc_segments(self, segments):
         level_segments = segments
+        
         level_segments = level_segments.replace("'", "").replace("[", "").replace("]", "")
         
         level_segments = level_segments.split()        
         level_segments = np.array(level_segments).astype(int)
-        
+        aux_segments = np.array(level_segments).astype(int)
+
         n_segments = len(level_segments)
 
         level_segments = calc_prob_dist(level_segments)
@@ -71,26 +77,28 @@ class ExpressiveRangePlot:
 
         #segments_linearity = 2 * (n_segments - segments_linearity)
         segments_linearity = segments_linearity
-
-        return level_segments, n_segments, segments_linearity, entropy_level        
+        segments_repeated = self._counter_segments_repeated(aux_segments)
+        return level_segments, n_segments, segments_linearity, entropy_level, segments_repeated        
 
     def build_map_zelda(self, map, entropies, index, segments):                
                 
         leniency = 0
         
         locations = array_el_locations(map)    
-        level_segments, n_segments, segments_linearity, entropy_level = self.calc_segments(segments[index])
+        level_segments, n_segments, segments_linearity, entropy_level, segments_repeated = self.calc_segments(segments[index])
 
         n_elements = 0
         
-        tiles = [zelda.Coin.ID, zelda.Enemy.ID, zelda.Ground.ID, zelda.Block.ID]
-        for tile in tiles:                                                       
-            n_elements += np.count_nonzero(map == tile)        
+        w = {zelda.Enemy.ID : 2, zelda.Key.ID : -0.5, zelda.Coin.ID : 0.5, zelda.Weapon.ID : -0.5, zelda.DoorExit.ID : -0.5}
+        tiles = [zelda.Coin.ID, zelda.Key.ID, zelda.Enemy.ID, zelda.Weapon.ID, zelda.DoorExit.ID]
+        
+        for tile in tiles:                              
+            n_elements += np.count_nonzero(map == tile) * w[tile]
 
         pos_player = locations[zelda.Player.ID]
         pos_player = pos_player[0]
         row, col   = pos_player[0], pos_player[1]
-        
+
         #tiles = [2, 3, 4, 5, 6, 7, 8]
         tiles = [zelda.DoorEntrance.ID, zelda.DoorExit.ID, 
                  zelda.Coin.ID, zelda.Key.ID, 
@@ -100,26 +108,54 @@ class ExpressiveRangePlot:
 
         h = 0 
 
-        map, max_dist, ent, grounds = wave_front_entrace(map, row, col, h)                       
+        map, max_dist, ent, grounds = wave_front_entrace(map, row, col, h)   
+        #self.show_map(map)
 
         map[row][col] = 50
         
+        col, row = map.shape
+
         tiles = [zelda.DoorExit.ID, zelda.Coin.ID, zelda.Key.ID, zelda.Enemy.ID, zelda.Weapon.ID]
+        w = {zelda.DoorExit.ID : 1, zelda.Coin.ID : 2, zelda.Key.ID : 1, zelda.Enemy.ID : 0.5, zelda.Weapon.ID : 1}
         dist = 0
         for tile in tiles:   
             for pos_tile in locations[tile]:
                 row = pos_tile[0]
-                col = pos_tile[1]
-                dist += map[row][col]                
-                map[row][col] = tile + 100            
+                col = pos_tile[1]                
+                if tile == zelda.Enemy.ID or tile == zelda.DoorExit.ID or zelda.Weapon.ID or zelda.Key.ID:
+                   dist += map[row][col]
+                else:
+                   dist += map[row][col]
+                   
+                map[row][col] = tile + 100           
 
-        leniency = (dist / max_dist) * n_elements * entropies[index]
+        #leniency = ( (dist / max_dist) * n_elements * entropies[index])
+        #leniency =  (dist + n_elements) * entropies[index]
+        #leniency = dist + n_elements + entropies[index] 
+        #leniency = ((dist * entropies[index]) * (segments_linearity / n_segments)) * n_elements 
+        #leniency = ((dist) * n_elements * entropies[index]) * (segments_linearity * 2)
 
-        linearity   = ((2 * segments_linearity) * (round(entropy_level, 2) - round(entropies[index], 2)))
+        #linearity   = ((2 * segments_linearity) * (round(entropy_level, 2) - round(entropies[index], 2)))
+        #linearity   = dist * (round(entropy_level, 2) - round(entropies[index], 2))        
 
-        print("Dist {}, MaxDist {}, NElements {}, NSegments {}({}), Leniency {}, Linearity {}, Entropy {} ".format(dist, max_dist, n_elements, n_segments, segments_linearity, round(leniency,2), round(linearity,2), round(entropies[index],2) ))
+        segs = self.convert_segments(segments[index])
+        leniency   = (dist * n_elements * entropies[index])
 
-        return leniency , linearity, map      
+        #linearity  = (self._reward_distance(segs) * segments_linearity) * entropies[index]
+        #linearity  = ((self.reward_neighbors(segs)*-1) * segments_linearity) * (round(entropy_level , 2) - round(entropies[index],2))
+        linearity = self.calc_linearity(segs, n_segments, entropy_level)
+
+        #print("Dist {}, MaxDist {}, NElements {}, NSegments {}({}-{}), Leniency {}, Linearity {}, Entropy {} ".format(dist, max_dist, n_elements, n_segments, segments_linearity, segments_repeated, round(leniency,2), round(linearity,2), round(entropies[index],2) ))
+
+        return leniency , linearity, map
+
+    def calc_linearity(self, segments, w1 = 1, w2 = 1):         
+        #linearity = ((self.reward_neighbors(segments) * -1) * w) + ((self._reward_distance(segments) * w))
+        #linearity = ((self.reward_neighbors(segments) * -1) * w)
+        #linearity = (self._reward_distance(segments) * w) + ((self.reward_neighbors(segments) * -1) * w) 
+        linearity = ((self._reward_distance(segments)) * w1 * w2)# + ((self.reward_neighbors(segments) * -1) * w1 * w2)
+        #linearity = (((self.reward_neighbors(segments))*-1) * w1 * w2)
+        return linearity
 
     def show_map(self, map):            
         fig, ax = plt.subplots(figsize=(10,10))
@@ -128,23 +164,73 @@ class ExpressiveRangePlot:
             for _j in range(len(map[0])):
                 text = ax.text(_j, _i, map[_i, _j],
                         ha="center", va="center", color="w")                           
-        plt.tight_layout()         
-        plt.imshow(map) 
-        plt.show()                                     
-        plt.close() 
+        plt.tight_layout()
+        plt.imshow(map)
+        plt.show()
+        plt.close()
+
+    def convert_segments(self, segment):
+        level_segments = segment                
+        level_segments = level_segments.replace("'", "").replace("[", "").replace("]", "")        
+        level_segments = level_segments.split()        
+        level_segments = np.array(level_segments).astype(int)        
+        segs = level_segments.reshape(self.board[0], self.board[1])        
+
+        return segs
+
+    def get_positions(self, tiles, map):        
+        max_row = map.shape[0]
+        max_col = map.shape[1]
+        new_map = []
+        for row in range(max_row):
+            for col in range(max_col):
+                id = int(map[row][col])
+                if id in tiles:
+                    new_map.append((row, col))
+        return new_map
+
+    def _counter_segments_repeated(self, segments):
+        _map = np.array(segments)
+        _map = list(_map.flatten())
+        _map = collections.Counter(_map)
+        counter = 0
+        #print(_map)
+        for e in _map.keys():    
+            if _map[e] > 1:
+                counter += _map[e]
+        return counter      
+
+    def _reward_distance(self, segments):
+        
+        map_segments = np.array(segments)
+        n_segments = map_segments.shape[1] * map_segments.shape[0]      
+        #print(n_segments)  
+        map_segments = set(map_segments.flatten())            
+        
+        reward_e = 0
+
+        for segment in map_segments:
+            positions = self.get_positions([segment], segments)                        
+            if len(positions) > 1:    
+                pos_init = positions[0]
+                for row, col in positions:                                        
+                    reward_e += (euclidean_distance(pos_init, (row, col)))
+                    #reward_e += (n_segments - manhattan_distance(pos_init, (row, col)))                    
+
+        return reward_e**2
 
     def build_map_mazecoin(self, map, entropies, index, segments):
-        
+       
         map = np.array(map)
 
         locations = array_el_locations(map)            
-        level_segments, n_segments, segments_linearity, entropy_level = self.calc_segments(segments[index])     
+        level_segments, n_segments, segments_linearity, entropy_level,segments_repeated = self.calc_segments(segments[index])     
         
         #Calcula a distância entre as moedas
         map_coin = map.copy()
         pos_coin = locations[mazecoin.CoinGold.ID]        
         pos_coin = pos_coin[0]
-        row_coin, col_coin   = pos_coin[0], pos_coin[1]
+        row_coin, col_coin = pos_coin[0], pos_coin[1]
         self.update_tiles(map_coin, [mazecoin.CoinGold.ID, mazecoin.Player.ID], 0)
         h = 0 
         map_coin, max_dist, ent, grounds = wave_front_entrace(map_coin, row_coin, col_coin, h)                       
@@ -159,9 +245,10 @@ class ExpressiveRangePlot:
                     map_coin[row][col] = tile + 100
 
         n_elements = 0        
-        tiles = [mazecoin.CoinGold.ID, mazecoin.Ground.ID, mazecoin.Block.ID]
+        tiles = [mazecoin.CoinGold.ID]#, mazecoin.Ground.ID, mazecoin.Block.ID]
+        w = {mazecoin.CoinGold.ID : 2}#, mazecoin.Ground.ID : -1, mazecoin.Block.ID : 1}
         for tile in tiles:                                                       
-            n_elements += np.count_nonzero(map == tile)            
+            n_elements += np.count_nonzero(map == tile) * w[tile]           
 
         pos_player = locations[mazecoin.Player.ID]            
         pos_player = pos_player[0]    
@@ -177,26 +264,39 @@ class ExpressiveRangePlot:
 
         dist = 0        
         tiles = [2]
-        for tile in tiles:   
+        w = {mazecoin.CoinGold.ID : 2, mazecoin.Player.ID : 1} #, mazecoin.Ground.ID : 0.1, mazecoin.Block.ID : 2}
+
+        ws = {6 : 0, 5 : 0.9, 4: 0.7, 3 : 0.5, 2 : 0.3, 1: 0.2, 0 : 0.1  }
+
+        for tile in tiles:
             for pos_tile in locations[tile]:
                 row = pos_tile[0]
                 col = pos_tile[1]
-                dist += map[row][col]                
+                dist += map[row][col] #* w[tile]               
                 map[row][col] = tile + 100        
 
-        leniency = ( (dist / max_dist) * n_elements * entropies[index])
-        linearity   = ((2 * segments_linearity) * (round(entropy_level, 2) - round(entropies[index],2)))
+        #leniency = (dist * entropies[index]) * (segments_linearity / n_segments) 
+        
+        segs = self.convert_segments(segments[index])        
 
-        print("Dist {}, MaxDist {}, NElements {}, NSegments {}({}), Leniency {}, Linearity {}, Entropy {} ".format(dist, max_dist, n_elements, n_segments, segments_linearity, round(leniency,2), round(linearity,2), round(entropies[index],2) ))
+        leniency   = (dist * n_elements * entropies[index])
+        #linearity  = (self._reward_distance(segs) * segments_linearity) * entropies[index]
+        #linearity  = ( (self.reward_neighbors(segs)*-1) * segments_linearity) * (round(entropy_level , 2) - round(entropies[index],2))
+        linearity = self.calc_linearity(segs, n_segments, entropy_level)
+        #linearity = self.calc_linearity(segs, (round(entropy_level , 2) - round(entropies[index],2))) #segments_linearity * entropy_level)
+        #print("Dist {}, MaxDist {}, NElements {}, NSegments {}({}-{}), Leniency {}, Linearity {}, Entropy {} ".format(dist, max_dist, n_elements, n_segments, segments_linearity, segments_repeated, round(leniency,2), round(linearity,2), round(entropies[index],2) ))
         #time.sleep(1)
-        return leniency, linearity, map        
+        return leniency, linearity, map
 
     def prepare(self):
         timesteps = [self.total_timesteps]    
         mlp_units = [64] 
         n_experiments   = 1
         RL_ALG          = "PPO"        
-        self.envs = [Game.ZELDA.value, Game.MAZECOINLOWMAPS.value]
+        self.envs = [Game.ZELDA.value, Game.ZELDALOWMAPS.value, Game.MAZECOINLOWMAPS.value]
+        #self.envs = [Game.ZELDA.value, Game.MAZECOINLOWMAPS.value]
+        #self.envs = [Game.ZELDALOWMAPS.value]
+        #self.envs = [Game.ZELDA.value, Game.MAZECOINLOWMAPS.value]
         for version in self.agents:
         
             for t_time_s in timesteps:
@@ -255,18 +355,19 @@ class ExpressiveRangePlot:
                                                     locations = array_el_locations(map)                                                
                                                     
                                                     if (env_game == Game.MAZECOINLOWMAPS.value):
-                                                        leniency, linearity, map = self.build_map_mazecoin(map, entropies, index, segments)
+                                                        leniency, linearity, map    = self.build_map_mazecoin(map, entropies, index, segments)                                                        
                                                     if (env_game == Game.ZELDA.value):
-                                                        leniency, linearity, map = self.build_map_zelda(map, entropies, index, segments)
+                                                        leniency, linearity, map    = self.build_map_zelda(map, entropies, index, segments)                                                        
+                                                    if (env_game == Game.ZELDALOWMAPS.value):
+                                                        leniency, linearity, map    = self.build_map_zelda(map, entropies, index, segments)                                                        
 
                                                     self.maps.append(map)
                                                                                                         
                                                     self.dobjective_leniency.append(round(leniency, 2))
-                                                    self.dentropies_linearity.append(round(linearity, 2))  
+                                                    self.dentropies_linearity.append(round(linearity, 2))
                                                     index += 1                                                  
 
                                     self.gera_graficos(self.path_results_experiments, env_game, version, entropies, segments)
-
 
     def diversity(self):
         timesteps = [self.total_timesteps]    
@@ -397,7 +498,25 @@ class ExpressiveRangePlot:
                                         plt.savefig(os.path.join(save_file, "{}-{}-{}{}".format(env_game, version, "Diversity-plot", ".pdf") ))
                                         #plt.show()
                                         plt.close()                                                                                                                   
+    
+    def reward_neighbors(self, segments):
+        
+        n, m = segments.shape
+        map_segments = np.array(segments)        
+        map_segments = list(map_segments.flatten())                    
+        positions = self.get_positions(map_segments, segments)
 
+        reward = 0
+
+        for row, col in positions:
+            segment = segments[row][col]
+            nei = neighbors(row, col, n-1, m-1)                        
+            for r, c in nei:                
+                if (segments[r][c] != -1) and segments[r][c] == segment and (row != r or col != c):
+                    reward += -2
+
+        return reward
+    
     def gera_graficos(self, path, env_game, agent, entropies, segments):
 
         #Normalized Data
@@ -405,6 +524,7 @@ class ExpressiveRangePlot:
         dentropies_linearity = normalize(np.array(self.dentropies_linearity))       
 
         save_map = False
+        rewards_nei = []
         for m in range(len(self.maps)):    
 
             if save_map:
@@ -418,6 +538,11 @@ class ExpressiveRangePlot:
                                                                                round(entropies[m], 2), 
                                                                                round(dobjective_leniency[m],2),
                                                                                segments[m])                            
+            segs = self.convert_segments(segments[m])
+            rewards_nei.append(self._reward_distance(segs))# self.reward_neighbors(segs))
+            #rewards_nei.append(self.reward_neighbors(segs)*-1)
+            #rewards_nei.append( (self.reward_neighbors(segs)*-1)+self._reward_distance(segs) )
+            
             #print (title)
             if save_map:
                 plt.tight_layout() 
@@ -436,7 +561,22 @@ class ExpressiveRangePlot:
                 #df.to_csv(path_csv_file + "/map"+str(m)+".csv", header=False, index=False)
 
         #cmap     = 'Greens_r' #'Spectral' 'inferno'
-        cmap='inferno'
+        #cmap='inferno'
+        if self.tag == "":
+            cmap='inferno'
+            #cmap='ocean_r'
+            #cmap='ocean11'
+        elif self.tag == "reward_neighbors":
+            cmap = 'Greens_r'
+        elif self.tag == "reward_neighbors_reward_distance":
+            cmap = 'Spectral'
+        elif self.tag == "-V2":
+            cmap='Pastel1'
+        elif self.tag == "reward_neighbors-V2":
+            cmap = 'Set1'
+        elif self.tag == "reward_neighbors_reward_distance-V2":
+            cmap = 'Accent'
+
         mincnt   = 0
         gridsize = 10                  
 
@@ -450,23 +590,53 @@ class ExpressiveRangePlot:
         hb = ax0.hexbin(dentropies_linearity, dobjective_leniency, gridsize=gridsize, cmap=cmap, mincnt=mincnt)
         ax0.set(xlim=xlim, ylim=ylim)
         #ax0.set_title("Hexagon binning")
-        cb = fig.colorbar(hb, ax=ax0, label='Número de Níveis')
+        #cb = fig.colorbar(hb, ax=ax0, label='Número de Níveis')
+        cb = fig.colorbar(hb, ax=ax0, label='Number of Levels')
         cb.ax.tick_params(labelsize=16)        
 
         save_file = mk_dir(path, "mapcolors")
         plt.tight_layout()
-        plt.xlabel('Linearidade', fontsize=16)
-        plt.ylabel('Leniência', fontsize=16)
+        #plt.xlabel('Linearidade', fontsize=16)
+        #plt.ylabel('Leniência', fontsize=16)
+        plt.xlabel('Linearity', fontsize=16)
+        plt.ylabel('Leniency', fontsize=16)        
         
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)        
         plt.tight_layout()
         print("Salvando o arquivo em: {}".format(save_file))
         #plt.savefig(os.path.join(save_file, "{}-{}-{}{}".format(env_game, agent, "Leniency-Linearity", ".png") ))
-        plt.savefig(os.path.join(save_file, "{}-{}-{}{}".format(env_game, agent, "Leniency-Linearity", ".pdf") ))
+        plt.savefig(os.path.join(save_file, "{}-{}-{}{}{}".format(env_game, agent, "Leniency-Linearity", self.tag, ".pdf") ))
         #plt.show()
         plt.close()                
+
+        """
+        fig, ax0 = plt.subplots(sharey=True)
+
+        data = []
         
+        rewards_nei =  np.array(rewards_nei)
+        print(rewards_nei)
+        rewards_nei_normalize = normalize(rewards_nei)
+        
+        #data.append(rewards_nei_normalize)        
+        #ax0.boxplot(data)        
+        #ax0.violinplot(data)
+        #ax0.set_xticklabels(['Reward neighbors'], fontsize=16)
+        
+        ax0.hist(rewards_nei_normalize, color='g')             
+        ax0.set_ylabel('Frequência')
+        ax0.set_xlabel('Neighbors')         
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.tight_layout()
+        #plt.savefig(os.path.join(save_file, "{}-{}-{}{}".format(env_game, agent, "Leniency-Linearity-Boxplot", ".png") ))
+        plt.savefig(os.path.join(save_file, "{}-{}-{}{}{}".format(env_game, agent, "Reward_neighbors-Boxplot", self.tag, ".pdf") ))        
+        #plt.show()
+        plt.close() 
+
+
+
         fig, ax0 = plt.subplots(sharey=True)
 
         data = []
@@ -483,7 +653,7 @@ class ExpressiveRangePlot:
         plt.yticks(fontsize=16)
         plt.tight_layout()
         #plt.savefig(os.path.join(save_file, "{}-{}-{}{}".format(env_game, agent, "Leniency-Linearity-Boxplot", ".png") ))
-        plt.savefig(os.path.join(save_file, "{}-{}-{}{}".format(env_game, agent, "Leniency-Linearity-Boxplot", ".pdf") ))        
+        plt.savefig(os.path.join(save_file, "{}-{}-{}{}{}".format(env_game, agent, "Leniency-Linearity-Boxplot", self.tag, ".pdf") ))        
         #plt.show()
         plt.close() 
 
@@ -492,7 +662,7 @@ class ExpressiveRangePlot:
         ax.set_ylabel('Frequência')
         ax.set_xlabel('Leniência') 
         plt.tight_layout()
-        plt.savefig(os.path.join(save_file, "{}-{}-{}{}".format(env_game, agent, "Leniency-Hist", ".pdf") ))               
+        plt.savefig(os.path.join(save_file, "{}-{}-{}{}{}".format(env_game, agent, "Leniency-Hist", self.tag, ".pdf") ))               
         #plt.show()
         plt.close()               
 
@@ -501,7 +671,7 @@ class ExpressiveRangePlot:
         ax.set_ylabel('Frequência')
         ax.set_xlabel('Linearidade')        
         plt.tight_layout()
-        plt.savefig(os.path.join(save_file, "{}-{}-{}{}".format(env_game, agent, "Linearity-Hist", ".pdf") ))                       
+        plt.savefig(os.path.join(save_file, "{}-{}-{}{}{}".format(env_game, agent, "Linearity-Hist", self.tag, ".pdf") ))                       
         #plt.show()
         plt.close()
 
@@ -521,10 +691,10 @@ class ExpressiveRangePlot:
         plt.yticks(fontsize=16)        
         
         #print("Salvando o arquivo em: {}".format(save_file))                                        
-        plt.savefig(os.path.join(save_file, "{}-{}-{}{}".format(env_game, agent, "Leniency-Hist-barstacked", ".pdf") ))
+        plt.savefig(os.path.join(save_file, "{}-{}-{}{}{}".format(env_game, agent, "Leniency-Hist-barstacked", self.tag, ".pdf") ))
         #plt.show()
         plt.close()          
-
+        """
 
 def gera_graficos_expressive_range(results_dir = "./results/",
                             total_timesteps = 50000,              
@@ -538,8 +708,10 @@ def gera_graficos_expressive_range(results_dir = "./results/",
                             representations = [Behaviors.NARROW_PUZZLE.value, Behaviors.WIDE_PUZZLE.value],
                             observations = [WrappersType.MAP.value],              
                             agents  = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HHPD.value, Experiment.AGENT_HEQHP.value, Experiment.AGENT_HEQHPD.value],
-                            seed:int = 1000,                             
-                            uuid = ""):
+                            seed:int = 1000,    
+                            board = [2,3],                         
+                            uuid = "",
+                            tag  = ""):
     expressiveRange = ExpressiveRangePlot(results_dir = results_dir,
                                         total_timesteps = total_timesteps,
                                         learning_rate   = learning_rate,        
@@ -553,6 +725,8 @@ def gera_graficos_expressive_range(results_dir = "./results/",
                                         representations = representations,      
                                         observations    = observations,
                                         seed            = seed,
-                                        uuid            = uuid)
+                                        board           = board,
+                                        uuid            = uuid,
+                                        tag             = tag)
 
     expressiveRange.prepare()

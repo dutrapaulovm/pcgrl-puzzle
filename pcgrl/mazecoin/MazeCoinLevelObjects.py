@@ -20,8 +20,7 @@ class Ground(Sprite):
     def __init__(self, x, y, tile_width = TILE_SIZE, tile_height = TILE_SIZE, id = 0):
         self.id = id
         self.name = "Ground"        
-        dir_tile = f"tile{tile_width}"
-
+        dir_tile = f"tile{tile_width}"        
         p = random.randrange(1, 100)
         
         if (p > 50):

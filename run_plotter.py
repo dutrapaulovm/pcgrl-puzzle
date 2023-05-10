@@ -8,32 +8,50 @@ from pcgrl.wrappers import *
 
 if __name__ == "__main__":
         
-        uuids = ["-21-(3, 2)","-61-(3, 2)","-180-(3, 2)","-21-(4, 2)","-61-(4, 2)","-180-(4, 2)"]
+        uuids = ["-21-(2, 3)","-61-(2, 3)","-180-(2, 3)","-21-(2, 4)","-61-(2, 4)","-180-(2, 4)"]
         entropies = [2.25, 2.25, 2.25, 2.75, 2.75, 2.75]
+        #uuids = ["-21-(2, 3)","-61-(2, 3)","-180-(2, 3)"]
+        #entropies = [2.75, 2.75, 2.75]
+        #uuids = ["-21-(2, 4)","-61-(2, 4)","-180-(2, 4)"]
+        #uuids = ["-21-(2, 4)","-61-(2, 4)","-180-(2, 4)"]
+        #uuids = ["-180-(2, 3)"]
+        #entropies = [2.25, 2.25, 2.25]        
+        #entropies = [2.75, 2.75, 2.75]        
+        #entropies = [2.25]        
         #uuids = ["-21-(4, 2)","-61-(4, 2)","-180-(4, 2)"]
         #entropies = [2.75, 2.75, 2.75]        
         #uuids = ["-180-(4, 2)"]
         #entropies = [2.75]        
-       # uuids = ["-21-(3, 2)","-61-(3, 2)","-180-(3, 2)"]
-       # entropies = [2.25, 2.25, 2.25]        
-
+        #uuids = ["-21-(3, 2)","-61-(3, 2)","-180-(3, 2)"]
+        #entropies = [2.25, 2.25, 2.25]        
+        #boards = [ [2,3]  ]
+        boards = [ [2,3],[2,3] ,[2,3], [2,4],[2,4] ,[2,4]   ]
+        #boards = [ [2,3],[2,3] ,[2,3] ]
+        #boards = [ [2,4],[2,4] ,[2,4] ]
+        #tag = "reward_neighbors_reward_distance-V2"
+        #tag = "reward_neighbors-V2"
+        #tag = "-V2"
+        #tag = "reward_neighbors_reward_distance"
+        #tag = "reward_neighbors"
+        tag = ""
         for el in range(len(uuids)):
+                
                 #env = [Game.DUNGEON.value, Game.MAZECOINLOWMAPS.value, Game.ZELDA.value]
                 #env = [Game.DUNGEON.value, Game.MAZECOINLOWMAPS.value, Game.ZELDA.value]
-                env = [Game.MAZECOINLOWMAPS.value, Game.ZELDA.value]
-                #env = [Game.MAZECOINLOWMAPS.value, Game.ZELDA.value]
-                #env = [Game.ZELDA.value]                
+                env = [Game.DUNGEON.value, Game.MAZECOINLOWMAPS.value, Game.ZELDA.value, Game.ZELDALOWMAPS.value]
+                #env = [Game.ZELDALOWMAPS.value]                
 
                 #agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HHPD.value, Experiment.AGENT_HEQHP.value, Experiment.AGENT_HEQHPD.value]
                 #agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value]
                 #agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value]
-                agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value]
-                #agents = [Experiment.AGENT_SS.value]
+                agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value, Experiment.AGENT_HEQHPEX.value]
+                #agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value, Experiment.AGENT_HEQHPEX.value]                
 
                 parser = argparse.ArgumentParser()
                 #parser.add_argument("--results_dir", default="./results/")
                 #parser.add_argument("--results_dir", default="D:/ResultsDissertacao/old/")
-                parser.add_argument("--results_dir", default="F:/Experimentos/Resultado-Novo/")
+                parser.add_argument("--results_dir", default="F:/Experimentos/pcgrlpuzzle-results/")
+                #parser.add_argument("--results_dir", default="F:/Experimentos/pcgrlpuzzle-results-threshold/")
                 parser.add_argument("--total_timesteps", default = 100000, type=int)        
                 #parser.add_argument("--total_timesteps", default = 50000, type=int)        
                 #parser.add_argument("--total_timesteps", default = 20000, type=int)        
@@ -50,6 +68,8 @@ if __name__ == "__main__":
                 parser.add_argument("--activation", default=ActivationFunc.SIGMOID.value, type=str)
                 #parser.add_argument("--activation", default=ActivationFunc.Tanh.value, type=str)
                 parser.add_argument("--entropy_min", default = entropies[el], type=float)
+                parser.add_argument("--board", default = boards[el], type=float)
+                
                 #parser.add_argument("--entropy_min", default = 2.75, type=float)
                 #parser.add_argument("--entropy_min", default = 2.25, type=float)
                 #parser.add_argument("--entropy_min", default = 1.80, type=float)        
@@ -78,8 +98,10 @@ if __name__ == "__main__":
                 #parser.add_argument("--uuid", default="180-4x2-V003", type=str)                  
                 #parser.add_argument("--uuid", default="-21-(3, 2)", type=str)  
                 #parser.add_argument("--uuid", default="-61-(3, 2)", type=str)  
-                #parser.add_argument("--uuid", default="-180-(3, 2)", type=str)
-                parser.add_argument("--uuid", default=uuids[el], type=str)    
+                #parser.add_argument("--uuid", default="-180-(3, 2)", type=str)                
+                parser.add_argument("--uuid", default=uuids[el], type=str)   
+                parser.add_argument("--tag", default=tag, type=str)   
+
                                 
                 args = parser.parse_args()
 
@@ -98,4 +120,6 @@ if __name__ == "__main__":
                         observations    = args.observations,
                         seed            = args.seed,
                         uuid            = args.uuid,
-                        language        = args.language)
+                        language        = args.language,
+                        board           = args.board,
+                        tag             = args.tag)

@@ -34,6 +34,7 @@ from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack, VecTransposeImage
 from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common.atari_wrappers import ClipRewardEnv, WarpFrame, MaxAndSkipEnv, NoopResetEnv
+from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewardThreshold
 
 # Import os for file path management
 import os 
@@ -44,7 +45,7 @@ from stable_baselines3.common import env_checker
 from gym.wrappers import GrayScaleObservation, ResizeObservation
 
 import app
-from custom_policy import CustomCNN
+from custom_policy import CustomCNN, CustomNetWork
 from mazecoinplay_env import MazeCoinPlayEnv, TrainAndLoggingCallback
 import torch as th
 
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     CHECKPOINT_DIR = "{}{}".format(path_log, '/train/')
     LOG_DIR = "{}{}".format(path_log, '/logs/')
 
-    callback = TrainAndLoggingCallback(check_freq=1000, save_path=CHECKPOINT_DIR)
+    #callback = TrainAndLoggingCallback(check_freq=1000, save_path=CHECKPOINT_DIR)
     
     steps = 100
     env = gym.make("mazecoinplay-v0")        
@@ -68,20 +69,41 @@ if __name__ == "__main__":
     env = VecFrameStack(env, 4, channels_order='last')    
     
     try:
-
+        
         policy_kwargs = dict(
-            features_extractor_class=CustomCNN,
-            features_extractor_kwargs=dict(features_dim=512),
-        )        
+            features_extractor_class =  CustomCNN,
+            features_extractor_kwargs = dict(features_dim=512),
+        )
 
         seed = 42       
         time_elapsed_agents = []
+        learning_rate = 3e-4
+        n_steps = 2048
+        total_timesteps = 1000000
+        n_epochs = 4
         set_random_seed (seed)
-        #model = DQN('CnnPolicy', env, verbose=1, policy_kwargs=policy_kwargs, learning_rate=1e6)#,buffer_size=1200000, learning_starts=1000)
-
+        #model = DQN('CnnPolicy', env, verbose=1, policy_kwargs=policy_kwargs, learning_rate=learning_rate,buffer_size=1200000)#, learning_starts=1000)
         #policy_kwargs = dict(net_arch = [64, 64], activation_fn=th.nn.Sigmoid)
         #model = PPO('CnnPolicy', env, verbose=1, seed=seed, policy_kwargs=policy_kwargs, learning_rate=0.000001, n_steps=8192, clip_range=.1, gamma=.95, gae_lambda=.9)
-        model = PPO('CnnPolicy', env, verbose=1, seed=seed,  learning_rate=2.5e-4, n_steps=8192) #, clip_range=.1, gamma=.95, gae_lambda=.9)
+
+        #callback_on_best = StopTrainingOnRewardThreshold(reward_threshold = reward_threshold, verbose = 1)
+        eval_callback = EvalCallback(env, 
+                                    #callback_on_new_best=callback_on_best, 
+                                    verbose = 1,
+                                    n_eval_episodes = 5,
+                                    render = False,
+                                    eval_freq = 10000,
+                                    log_path = LOG_DIR,
+                                    best_model_save_path=CHECKPOINT_DIR)
+                
+        model = PPO('CnnPolicy', env, verbose = 1, 
+                                 seed = seed,  
+                                 learning_rate = learning_rate, 
+                                 gamma = 0.99,
+                                 gae_lambda = 0.95,                                 
+                                 ent_coef = 0.001,
+                                 n_epochs=n_epochs,                                 
+                                 n_steps = n_steps, policy_kwargs=policy_kwargs)
 
         #saveOnBest_callback = SaveOnBestTrainingRewardCallback(check_freq=100, log_dir=CHECKPOINT_DIR)                                                                    
 
@@ -89,7 +111,7 @@ if __name__ == "__main__":
         print("Start: ", start_agent)
         print()
 
-        model.learn(total_timesteps=100000, callback=callback)
+        model.learn(total_timesteps=total_timesteps, callback=eval_callback)
 
         end_agent = timer()        
         print("End: ", end_agent)

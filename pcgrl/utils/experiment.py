@@ -13,6 +13,7 @@ from pcgrl.maze.MazeEnv import MazeEnv
 from pcgrl.minimap.MiniMapEnv import MiniMapEnv
 from pcgrl.dungeon.DungeonEnv import DungeonEnv
 from pcgrl.zelda.ZeldaEnv import ZeldaEnv
+from pcgrl.zelda.ZeldaLowMapsEnv import ZeldaLowMapsEnv
 from pcgrl.wrappers import *
 from pcgrl.utils.utils import *
 from pcgrl.utils.utils import gen_random_number
@@ -29,8 +30,10 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import VecVideoRecorder, DummyVecEnv
 from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common.policies import ActorCriticPolicy
+from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewardThreshold
 
 from custom_policy import CustomCNN
+from custom_policy import CustomCNNV2
 
 import torch as th
 
@@ -192,6 +195,36 @@ def plot(average, scores, episodes, path, filename, rep, game):
     pylab.legend()
     pylab.savefig(path+"/"+filename+".png")
 
+
+class StopTrainingOnReward(BaseCallback):
+    """
+    Stop the training once a threshold in episodic reward
+    has been reached (i.e. when the model is good enough).
+
+    It must be used with the ``EvalCallback``.
+
+    :param reward_threshold:  Minimum expected reward per episode
+        to stop training.
+    :param verbose: Verbosity level: 0 for no output, 1 for indicating when training ended because episodic reward
+        threshold reached
+    """
+
+    def __init__(self, reward_threshold: float, verbose: int = 0):
+        super().__init__(verbose=verbose)
+        self.reward_threshold = reward_threshold
+
+    def _on_step(self) -> bool:
+        assert self.parent is not None, "``StopTrainingOnMinimumReward`` callback must be used " "with an ``EvalCallback``"
+        # Convert np.bool_ to bool, otherwise callback() is False won't work
+        continue_training = bool(self.parent.best_mean_reward < self.reward_threshold)
+        if self.verbose >= 1 and not continue_training:
+            print(
+                f"Stopping training because the mean reward {self.parent.best_mean_reward:.2f} "
+                f" is above the threshold {self.reward_threshold}"
+            )            
+        return continue_training
+
+
 #https://stable-baselines3.readthedocs.io/en/v0.11.1/guide/examples.html
 class SaveOnBestTrainingRewardCallback(BaseCallback):
     """
@@ -203,12 +236,13 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
       It must contains the file created by the ``Monitor`` wrapper.
     :param verbose: (int)
     """
-    def __init__(self, check_freq: int, log_dir: str, verbose=1):
+    def __init__(self, check_freq: int, log_dir: str, verbose=1, reward_threshold = 0):
         super(SaveOnBestTrainingRewardCallback, self).__init__(verbose)
         self.check_freq = check_freq
         self.log_dir = log_dir
         self.save_path = os.path.join(log_dir, 'best_model')
         self.best_mean_reward = -np.inf
+        self.reward_threshold = reward_threshold
 
     def _init_callback(self) -> None:
         #Create folder if needed
@@ -216,6 +250,7 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
             os.makedirs(self.save_path, exist_ok=True)
 
     def _on_step(self) -> bool:
+        continue_training = True
         if self.n_calls % self.check_freq == 0:
 
           #Retrieve training reward
@@ -233,9 +268,19 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
                   # Example for saving best model
                   if self.verbose > 0:
                     print("Saving new best model to {}".format(self.save_path))
-                  self.model.save(self.save_path)
 
-        return True
+                  self.model.save(self.save_path)
+                
+
+              # Convert np.bool_ to bool, otherwise callback() is False won't work
+              continue_training = bool(self.best_mean_reward < self.reward_threshold)
+              if self.verbose >= 1 and not continue_training:
+                print(
+                    f"Stopping training because the mean reward {best_mean_reward:.2f} "
+                    f" is above the threshold {self.reward_threshold}"
+                )                               
+
+        return continue_training
     
 class ExperimentManager(object):    
     def __init__(
@@ -271,7 +316,9 @@ class ExperimentManager(object):
             uuid:str = "",            
             hyperparams: Optional[Dict[str, Any]] = None,                        
             policy_kwargs : Optional[Dict[str, Any]] = dict(net_arch = [64, 64], activation_fn=th.nn.Sigmoid),
-            verbose: int = 1):    
+            verbose: int = 1,
+            show_logger = False,
+            rewards_threshold = []):    
         super(ExperimentManager, self).__init__()
                 
         if (policy is None):
@@ -314,10 +361,11 @@ class ExperimentManager(object):
         self.action_rotate = action_rotate
         self.piece_size = piece_size
         self.env_rewards = env_rewards        
+        self.show_logger = show_logger
+        self.rewards_threshold = rewards_threshold
 
     def __make_env(self, name_game, max_changes = 61, 
-                        save_image_level = False,
-                        show_logger      = False,
+                        save_image_level = False,                  
                         show_hud         = False,
                         action_change    = False,
                         action_rotate    = False,
@@ -328,31 +376,33 @@ class ExperimentManager(object):
                         representation   = Behaviors.NARROW_PUZZLE.value):
         singleEnv = None       
         
-        kwargs = {"seed" : self.seed,
+        kwargs = {"seed" : self.seed_env,
                   "rep" : representation,
                   "path" : path_experiments,
                   "save_logger" : True,
                   "save_image_level" : save_image_level,
-                  "show_logger" : show_logger,
+                  "show_logger" : self.show_logger,
                   "action_change" : action_change,
                   "action_rotate" : action_rotate,
                   "board" : self.board,
                   "piece_size" : self.piece_size}        
         
         if name_game == Game.MAZE.value:                         
-            singleEnv = MazeEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size, env_rewards = self.env_rewards)
+            singleEnv = MazeEnv(seed=self.seed_env, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=self.show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size, env_rewards = self.env_rewards)
         elif name_game == Game.MAZECOINLOWMAPS.value:                         
-            singleEnv = MazeCoinLowMapsEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size, env_rewards = self.env_rewards)                     
+            singleEnv = MazeCoinLowMapsEnv(seed=self.seed_env, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=self.show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size, env_rewards = self.env_rewards)                     
         elif name_game == Game.DUNGEON.value:             
-            singleEnv = DungeonEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)      
+            singleEnv = DungeonEnv(seed=self.seed_env, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=self.show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)      
         elif name_game == Game.ZELDA.value:             
-            singleEnv = ZeldaEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)
+            singleEnv = ZeldaEnv(seed=self.seed_env, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=self.show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)
+        elif name_game == Game.ZELDALOWMAPS.value:
+            singleEnv = ZeldaLowMapsEnv(seed=self.seed_env, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=self.show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)            
         elif name_game == Game.MINIMAP.value:             
-            singleEnv = MiniMapEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)      
+            singleEnv = MiniMapEnv(seed=self.seed_env, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=self.show_logger, action_change=action_change, action_rotate=action_rotate,board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)      
         elif name_game == Game.MINIMAPLOWMODELS.value:             
-            singleEnv = MiniMapLowMapsEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)       
+            singleEnv = MiniMapLowMapsEnv(seed=self.seed_env, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=self.show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)       
         elif name_game == Game.SMB.value:             
-            singleEnv = SMBEnv(seed=self.seed, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)
+            singleEnv = SMBEnv(seed=self.seed_env, rep = representation, path=path_experiments, save_logger=True, save_image_level=save_image_level, show_logger=self.show_logger, action_change=action_change, action_rotate=action_rotate, board = self.board, piece_size = self.piece_size,env_rewards = self.env_rewards)
         else:
             singleEnv = gym.make(name_game)
             singleEnv = singleEnv.env            
@@ -364,7 +414,8 @@ class ExperimentManager(object):
         singleEnv.reward_low_done_bonus = self.reward_low_done_bonus
         singleEnv.reward_change_penalty = self.reward_change_penalty
         singleEnv.reward_entropy_penalty = self.reward_entropy_penalty
-        singleEnv.factor_reward = self.factor_reward                
+        singleEnv.factor_reward = self.factor_reward   
+        singleEnv.show_logger = self.show_logger             
                   
         game = singleEnv.game
         singleEnv.exp = agent
@@ -390,6 +441,11 @@ class ExperimentManager(object):
         env = RenderMonitor(env, 1, path_monitors_experiments, rrender=render)
         
         #env = DummyVecEnv([lambda: env])
+
+        if self.policy == "CnnPolicy":    
+            env = RGBObservationWrapper(env=env)
+            env = ScaledFloatFrame(env)        
+            env = DummyVecEnv([lambda :env])       
           
         return env, path_monitors_experiments, experiment_monitor        
     
@@ -423,16 +479,22 @@ class ExperimentManager(object):
             seed (list, optional): List of seeds for each experiment. This parameter must be used in the value generated for each learning. Defaults to [1000].
         """        
         for experiment in range(n_experiments):
-        
+            aux_seed = self.seed
             l = len(seeds)
             if (l > 1):
                 self.seed = seeds[experiment]
             else:
                 self.seed = seeds[0]
+            self.seed_env = self.seed
             if use_function_set_random_seed:
                 if n_experiments > 1:
-                    set_random_seed(self.seed)            
-                           
+                    seed = np.random.randint(2**32 - 1, dtype="int64").item()
+                    self.seed_env = seed
+                    set_random_seed(seed)            
+            
+            self.seed     = aux_seed
+            
+
             self.__create_results_dir()           
             self.__inference(time_steps = time_steps, 
                              experiment = experiment, 
@@ -698,14 +760,14 @@ class ExperimentManager(object):
             time_elapsed_agents.append(d)                       
                             
             df = pad.DataFrame(time_elapsed_agents)
-            filename_timeela = "{}/{}-{}-{}-{}.csv".format(self.path_results, "/Inference Time elapsed", agent, env_name, muuid) 
+            filename_timeela = "{}/{}-{}-{}-{}.csv".format(self.path_results, "/Inference Time elapsed", agent, env_name, self.uuid)
             df.to_csv(filename_timeela,  index=False)
             
     def __train(self, save_image_level = False, show_hud = False, render = False):
         
         path_results = self.path_results
         
-        act_func = self.act_func
+        act_func = self.act_func        
         activation_fn = th.nn.Sigmoid
         if act_func == ActivationFunc.ReLU.value:
             activation_fn = th.nn.ReLU
@@ -713,7 +775,9 @@ class ExperimentManager(object):
             activation_fn = th.nn.Sigmoid
         elif act_func == ActivationFunc.Tanh.value:
             activation_fn = th.nn.Tanh
-
+        elif act_func == ActivationFunc.SoftMax.value:
+            activation_fn = th.nn.Softmax            
+        
         if (self.policy_kwargs is None):        
             self.policy_kwargs = dict(net_arch = [dict(pi=[64, 64], vf=[64, 64])], activation_fn=activation_fn)
         
@@ -741,6 +805,11 @@ class ExperimentManager(object):
                         observation = _obs
                         
                         plotResults = PlotResults()
+
+                        reward_threshold = 0                        
+                        
+                        if len(self.rewards_threshold) > 0:
+                            reward_threshold = self.rewards_threshold[agent]
                         
                         params = {
                             "RL_ALG" : self.rl_algo,
@@ -762,7 +831,8 @@ class ExperimentManager(object):
                             "reward_entropy_penalty"   : self.reward_entropy_penalty,
                             "reward_change_penalty"    : self.reward_change_penalty,
                             "factor_reward" : self.factor_reward,                            
-                            "board" : self.board
+                            "board" : self.board,
+                            "reward_threshold" : reward_threshold
                         }
                                                                                     
                         info_params = []
@@ -814,9 +884,34 @@ class ExperimentManager(object):
                                             
                         try:
                             
-                            saveOnBest_callback = SaveOnBestTrainingRewardCallback(check_freq=100, log_dir=callback_log_dir)
+                            env = DummyVecEnv([lambda :env])  
+
+                            #eval_callback = SaveOnBestTrainingRewardCallback(check_freq=1000,
+                            #                                                log_dir=callback_log_dir, verbose=1,
+                            #                                                reward_threshold=5)
+
+                            #Stop training when the model reaches the reward threshold                    
+
+                            if len(self.rewards_threshold) > 0:
+                                callback_on_best = StopTrainingOnRewardThreshold(reward_threshold = reward_threshold, verbose = 1)
+                                eval_callback = EvalCallback(env, 
+                                                            callback_on_new_best=callback_on_best, 
+                                                            verbose = 1,
+                                                            n_eval_episodes = 5,
+                                                            render = False,
+                                                            eval_freq = 10000,
+                                                            log_path = callback_log_dir,
+                                                            best_model_save_path=callback_log_dir)
+                            else:                                
+                                eval_callback = EvalCallback(env,                                                             
+                                                            verbose = 1,
+                                                            n_eval_episodes = 5,
+                                                            render = False,
+                                                            eval_freq = 10000,
+                                                            log_path = callback_log_dir,
+                                                            best_model_save_path=callback_log_dir)                                
                                 
-                            model.learn(total_timesteps = self.total_timesteps, callback = saveOnBest_callback)
+                            model.learn(total_timesteps = self.total_timesteps, callback = eval_callback)
                             
                             filename_model = "{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}".format(representation,
                                                                                     observation,
@@ -876,7 +971,7 @@ class ExperimentManager(object):
             time_elapsed_agents.append(d)                       
                             
             df = pad.DataFrame(time_elapsed_agents)
-            filename_timeela = "{}/{}-{}-{}-{}.csv".format(self.path_results, "/Training Time elapsed", agent, env_name, muuid) 
+            filename_timeela = "{}/{}-{}-{}-{}.csv".format(self.path_results, "/Training Time elapsed", agent, env_name, self.uuid) 
             df.to_csv(filename_timeela,  index=False)    
     
     def learn(self, save_image_level:bool = False, 
@@ -895,6 +990,8 @@ class ExperimentManager(object):
        """
        if n_experiments > 1:
            self.seed = gen_random_number()
+        
+       self.seed_env = self.seed
     
        time_elapsed = []
        for experiment in range(n_experiments):            
@@ -924,3 +1021,34 @@ class ExperimentManager(object):
             if n_experiments > 1:
                 self.seed = gen_random_number()
 
+    def plot_result_experiments(self):
+        self.__create_results_dir()
+        path_results = self.path_results
+        
+        act_func = self.act_func        
+        activation_fn = th.nn.Sigmoid
+        if act_func == ActivationFunc.ReLU.value:
+            activation_fn = th.nn.ReLU
+        elif act_func == ActivationFunc.SIGMOID.value:
+            activation_fn = th.nn.Sigmoid
+        elif act_func == ActivationFunc.Tanh.value:
+            activation_fn = th.nn.Tanh
+        elif act_func == ActivationFunc.SoftMax.value:
+            activation_fn = th.nn.Softmax            
+        
+        if (self.policy_kwargs is None):        
+            self.policy_kwargs = dict(net_arch = [dict(pi=[64, 64], vf=[64, 64])], activation_fn=activation_fn)
+        
+        for agent in self.agent:         
+                                
+            for env_name in self.envs:
+                
+                for _rep in self.representations:
+                    
+                    print("Ploting...")
+                    main_dir = "Experiment 0{}-{}-{}-{}".format(1, agent, env_name, self.rl_algo)                                        
+                    path_experiments = mk_dir(path_results, main_dir)                                                
+                    path_experiments = mk_dir(path_results, _rep)        
+                    path_monitors_experiments = os.path.join(path_experiments, "monitors")
+                    print(path_monitors_experiments)
+                    results_plotter.plot_results([path_monitors_experiments], int(self.total_timesteps), results_plotter.X_TIMESTEPS, env_name)     

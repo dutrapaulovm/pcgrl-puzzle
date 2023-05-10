@@ -87,7 +87,10 @@ def ecdf(data):
 #https://machinelearningmastery.com/divergence-between-probability-distributions/        
 # calculate the kl divergence
 def kl_divergence(p, q):   
-    return np.sum(np.where(p != 0, p * np.log(p / q), 0))#sum(p[i] * np.log(p[i] / q[i]) for i in range(len(p)))   
+    #import torch.nn.functional as F
+    #out = F.kl_div(p, q)    
+    return np.sum(np.where(p != 0, p * np.log(p / q), 0))
+    #np.sum(np.where(p != 0, p * np.log(p / q), 0))#sum(p[i] * np.log(p[i] / q[i]) for i in range(len(p)))   
  
 # calculate the js divergence
 def js_divergence(p, q, w = 0.5, epsilon: float = 1e-8):
@@ -184,6 +187,17 @@ def decodedXY(state, screen_width, state_width, state_height):
 
     return vec
 
+def get_positions(tiles, map):        
+    max_row = map.shape[0]
+    max_col = map.shape[1]
+    new_map = []
+    for row in range(max_row):
+        for col in range(max_col):
+            id = int(map[row][col])
+            if id in tiles:
+                new_map.append((row, col))
+    return new_map
+
 def neighbors(row, col, n, m, four_way=False):
     """Return indices of adjacent cells"""
     if four_way:
@@ -201,7 +215,13 @@ def neighbors(row, col, n, m, four_way=False):
         
 def manhattan_distance(xy1, xy2):
   "Returns the Manhattan distance between points xy1 and xy2"
-  return abs( xy1[0] - xy2[0] ) + abs( xy1[1] - xy2[1] )
+  #return math.sqrt(abs( xy1[0] - xy2[0] )**2 + abs( xy1[1] - xy2[1] )**2) 
+
+  return abs(xy1[0] - xy2[0] ) + abs( xy1[1] - xy2[1] )
+
+def euclidean_distance(pointA, pointB):
+    dist = np.linalg.norm(np.array(pointA) - np.array(pointB))
+    return dist
 
 def heauristic(cell, goal):
     x1, y1 = cell
@@ -467,24 +487,18 @@ def wave_front_entrace(grid, row, col, h = 0):
         
         r1, cl = row, min(m, col + 1) 
         r2, cr = row, max(0, col - 1)
-
         r3, ct = max(0, row - 1), min(m, col) 
         r4, cb = min(n, row + 1), max(0, col)             
+
         if grid[row][col] != -99:
             grounds += 1
 
         if (grid[r1][cl] == -99 and grid[r2][cr] == -99 and grid[row][col] != 0) or \
             grid[r3][ct] == -99 and grid[r4][cb] == -99 and grid[row][col] != 0:
-            ent += 1
-            #grid[row][col]  = 100 #(grid[row][col] + 10) + h
-        #else:
-        #    grid[row][col]  = 10 #(grid[row][col] + 10) + h
-            
+            ent += 1            
 
         for r, c in nei:                                               
             if grid[r][c] != 0:
-                #if grid[r][c] == -99:
-                #    ent += 1
                 continue
             else:
                 grid[r][c]  = (grid[row][col] + 1) + h                
@@ -578,7 +592,7 @@ def heauristic(cell, goal):
     x1, y1 = cell
     x2, y2 = goal
 
-    dist = ((x2-x1)**2 + (y2-y1)**2)**0.5
+    dist = math.sqrt((x2-x1)**2 + (y2-y1)**2) #**0.5
     return dist
 
 

@@ -138,9 +138,8 @@ class PCGRLEnv(gym.Env):
         if (self.show_logger):
             clear_console()
             print()             
-            
-        clear_console()
-        print("Env name: ", self.name)                               
+            clear_console()
+            print("Env name: ", self.name)                               
 
         self.iterations += 1
 
