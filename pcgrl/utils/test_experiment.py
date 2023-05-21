@@ -12,7 +12,7 @@ if __name__ == '__main__':
     gamma           = 0.99
     batch_size      = 64
     n_epochs        = 10
-    max_changes     = [61, 180]
+    max_changes     = [180]
     #max_changes     = [21, 61, 180]
     time_steps_inference     = 1000
     entropy_min              = None
@@ -22,12 +22,12 @@ if __name__ == '__main__':
     reward_entropy_penalty   = 0
     reward_change_penalty    = -0.1
     #boards = [(2, 3), (2, 4)]
-    boards = [(2, 3)]
+    boards = [(4, 6)]
     #path_results = "F:\Experimentos\Results-Reward_threshold"
-    path_results = "F:\Experimentos\Resultados-5Experimentos"
+    path_results = "F:\Experimentos\ResultadosPiece4x4"
     #seeds = [42, 43, 44, 45, 46]  
     #seeds = [42]
-    seeds = [396297772, 1267813114, 1293202981, 2031146959, 2967016284]
+    seeds = [42, 396297772, 1267813114, 1293202981, 2031146959, 2967016284]
     current_seed  = 0
     factor_reward = 1
     render        = False
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     action_rotate = False
     env_rewards   = False
     save_level    = False
-    piece_size    = 8
+    piece_size    = 4
     is_training   = True
     is_inference  = True
     plot_results_experiments = False
@@ -71,7 +71,7 @@ if __name__ == '__main__':
                                 Experiment.AGENT_HEQHPEX.value  : 8.3  * factor_reward, 
                                 Experiment.AGENT_HEQHPD.value   : 83.0 * factor_reward}
 
-        #rewards_threshold = []
+        rewards_threshold = []
         for m_changes in max_changes:
 
             uuid = "-{}-{}".format(m_changes,board)

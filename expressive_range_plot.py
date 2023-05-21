@@ -116,7 +116,7 @@ class ExpressiveRangePlot:
         col, row = map.shape
 
         tiles = [zelda.DoorExit.ID, zelda.Coin.ID, zelda.Key.ID, zelda.Enemy.ID, zelda.Weapon.ID]
-        w = {zelda.DoorExit.ID : 1, zelda.Coin.ID : 2, zelda.Key.ID : 1, zelda.Enemy.ID : 0.5, zelda.Weapon.ID : 1}
+        w = {zelda.DoorExit.ID : -0.5, zelda.Coin.ID : 2, zelda.Key.ID : -0.5, zelda.Enemy.ID : 2, zelda.Weapon.ID : -0.5}
         dist = 0
         for tile in tiles:   
             for pos_tile in locations[tile]:
@@ -217,7 +217,7 @@ class ExpressiveRangePlot:
                     reward_e += (euclidean_distance(pos_init, (row, col)))
                     #reward_e += (n_segments - manhattan_distance(pos_init, (row, col)))                    
 
-        return reward_e**2
+        return reward_e
 
     def build_map_mazecoin(self, map, entropies, index, segments):
        

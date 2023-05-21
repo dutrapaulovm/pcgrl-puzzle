@@ -2,8 +2,9 @@ import numpy as np
 from abc import abstractmethod, ABC
 
 class RewardFunction:
-    def __init__(self):
+    def __init__(self, magnitude = 1):        
         self.info = {}
+        self.magnitude = magnitude
 
     @abstractmethod
     def compute_reward(self, **kwargs):
@@ -13,5 +14,7 @@ class RewardFunction:
         pass
 
     def reset(self):
-        self.on_reset()
-        return self.info
+        info = self.info
+        self.info = {}
+        self.on_reset()        
+        return info

@@ -7,27 +7,23 @@ import math
 
 class Entropy(RewardFunction):
 
-    def __init__(self):
-        super(EntropyQuality, self).__init__()
-        self.factor_reward  = 1        
+    def __init__(self, magnitude = 1):
+        super(EntropyQuality, self).__init__(magnitude = magnitude)        
         self.segments       = []
 
-    def compute_reward(self, **kwargs):
-        self.factor_reward  = kwargs['factor_reward']        
+    def compute_reward(self, **kwargs):        
         self.segments       = kwargs['segments']        
-        reward = entropy(self.segments) * self.factor_reward
+        reward = entropy(self.segments) * self.magnitude
         return reward
 
 class EntropyQuality(RewardFunction):
 
-    def __init__(self):
-        super(EntropyQuality, self).__init__()
-        self.factor_reward  = 1
+    def __init__(self, magnitude = 1):
+        super(EntropyQuality, self).__init__(magnitude = magnitude)        
         self.entropy_min    = 1
         self.segments       = []          
 
-    def compute_reward(self, **kwargs):
-        self.factor_reward  = kwargs['factor_reward']
+    def compute_reward(self, **kwargs):        
         self.entropy_min    = kwargs['entropy_min']
         self.segments       = kwargs['segments']
 
@@ -38,25 +34,21 @@ class EntropyQuality(RewardFunction):
         e = entropy(self.segments)
         r = (e**x - self.entropy_min**x)                
         f = 1
-        reward = (((r + sign(r)) * f)) * self.factor_reward        
+        reward = (((r + sign(r)) * f)) * self.magnitude       
         return reward    
 
 class EntropyQualityEx(RewardFunction):
 
-    def __init__(self, rewards:RewardFunction = []):
-        super(EntropyQualityEx, self).__init__()
-        self.factor_reward  = 1
+    def __init__(self, magnitude = 1):
+        super(EntropyQualityEx, self).__init__(magnitude = magnitude)        
         self.entropy_min    = 1
-        self.segments       = []        
-        self.rewards = rewards
+        self.segments       = []                
 
-    def compute_reward(self, **kwargs):
-        self.factor_reward  = kwargs['factor_reward']
+    def compute_reward(self, **kwargs):        
         self.entropy_min    = kwargs['entropy_min']
         self.segments       = kwargs['segments']
         agent_reward        = kwargs['agent_reward']
         
-        """
         sign = lambda x: math.copysign(1, x)
 
         reward = 0
@@ -64,12 +56,10 @@ class EntropyQualityEx(RewardFunction):
         e = entropy(self.segments)
         r = (e**x - self.entropy_min**x)                
         f = 1
-        reward = (((r + sign(r)) * f)) * self.factor_reward   
-        """
-        reward = 0
+        reward = (((r + sign(r)) * f)) * self.magnitude        
 
-        for r in self.rewards:
-           reward += r.compute_reward(**kwargs)
+        #for r in self.rewards:
+        #   reward += r.compute_reward(**kwargs)
 
         reward += agent_reward
 

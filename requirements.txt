@@ -1,5 +1,5 @@
-stable-baselines3
-sb3-contrib
+pip
+pip
 pygame
 matplotlib
 tqdm
