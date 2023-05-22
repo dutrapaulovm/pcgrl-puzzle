@@ -89,7 +89,7 @@ class ExpressiveRangePlot:
 
         n_elements = 0
         
-        w = {zelda.Enemy.ID : 2, zelda.Key.ID : -0.5, zelda.Coin.ID : 0.5, zelda.Weapon.ID : -0.5, zelda.DoorExit.ID : -0.5}
+        w = {zelda.Enemy.ID : 2, zelda.Key.ID : -0.5, zelda.Coin.ID : 2, zelda.Weapon.ID : -0.5, zelda.DoorExit.ID : -0.5}
         tiles = [zelda.Coin.ID, zelda.Key.ID, zelda.Enemy.ID, zelda.Weapon.ID, zelda.DoorExit.ID]
         
         for tile in tiles:                              
@@ -116,45 +116,31 @@ class ExpressiveRangePlot:
         col, row = map.shape
 
         tiles = [zelda.DoorExit.ID, zelda.Coin.ID, zelda.Key.ID, zelda.Enemy.ID, zelda.Weapon.ID]
-        w = {zelda.DoorExit.ID : -0.5, zelda.Coin.ID : 2, zelda.Key.ID : -0.5, zelda.Enemy.ID : 2, zelda.Weapon.ID : -0.5}
+        #w = {zelda.DoorExit.ID : -0.5, zelda.Coin.ID : 2, zelda.Key.ID : -0.5, zelda.Enemy.ID : 2, zelda.Weapon.ID : -0.5}
         dist = 0
-        for tile in tiles:   
+        for tile in tiles:
             for pos_tile in locations[tile]:
                 row = pos_tile[0]
-                col = pos_tile[1]                
-                if tile == zelda.Enemy.ID or tile == zelda.DoorExit.ID or zelda.Weapon.ID or zelda.Key.ID:
-                   dist += map[row][col]
-                else:
+                col = pos_tile[1]                                
+                if tile == zelda.DoorExit.ID or tile == zelda.Weapon.ID or tile == zelda.Key.ID:
+                   dist += map[row][col]                         
+                elif tile == zelda.Enemy.ID:
+                   d_enemy = map[row][col]
+                   d_enemy = (max_dist - d_enemy) * math.pi
+                   dist += d_enemy                                                      
+                else:                   
                    dist += map[row][col]
                    
-                map[row][col] = tile + 100           
-
-        #leniency = ( (dist / max_dist) * n_elements * entropies[index])
-        #leniency =  (dist + n_elements) * entropies[index]
-        #leniency = dist + n_elements + entropies[index] 
-        #leniency = ((dist * entropies[index]) * (segments_linearity / n_segments)) * n_elements 
-        #leniency = ((dist) * n_elements * entropies[index]) * (segments_linearity * 2)
-
-        #linearity   = ((2 * segments_linearity) * (round(entropy_level, 2) - round(entropies[index], 2)))
-        #linearity   = dist * (round(entropy_level, 2) - round(entropies[index], 2))        
+                map[row][col] = tile + 100
 
         segs = self.convert_segments(segments[index])
-        leniency   = (dist * n_elements * entropies[index])
-
-        #linearity  = (self._reward_distance(segs) * segments_linearity) * entropies[index]
-        #linearity  = ((self.reward_neighbors(segs)*-1) * segments_linearity) * (round(entropy_level , 2) - round(entropies[index],2))
+        leniency   = (dist * n_elements * entropy_level)#entropies[index])
         linearity = self.calc_linearity(segs, n_segments, entropy_level)
-
-        #print("Dist {}, MaxDist {}, NElements {}, NSegments {}({}-{}), Leniency {}, Linearity {}, Entropy {} ".format(dist, max_dist, n_elements, n_segments, segments_linearity, segments_repeated, round(leniency,2), round(linearity,2), round(entropies[index],2) ))
-
+        #print("Dist {}, MaxDist {}, NElements {}, NSegments {}({}-{}), Leniency {}, Linearity {}, Entropy {} ".format(dist, max_dist, n_elements, n_segments, segments_linearity, segments_repeated, round(leniency,2), round(linearity,2), round(entropies[index],2) ))        
         return leniency , linearity, map
 
     def calc_linearity(self, segments, w1 = 1, w2 = 1):         
-        #linearity = ((self.reward_neighbors(segments) * -1) * w) + ((self._reward_distance(segments) * w))
-        #linearity = ((self.reward_neighbors(segments) * -1) * w)
-        #linearity = (self._reward_distance(segments) * w) + ((self.reward_neighbors(segments) * -1) * w) 
-        linearity = ((self._reward_distance(segments)) * w1 * w2)# + ((self.reward_neighbors(segments) * -1) * w1 * w2)
-        #linearity = (((self.reward_neighbors(segments))*-1) * w1 * w2)
+        linearity = ((self._reward_distance(segments)) * w1 * w2)        
         return linearity
 
     def show_map(self, map):            
@@ -279,13 +265,9 @@ class ExpressiveRangePlot:
         
         segs = self.convert_segments(segments[index])        
 
-        leniency   = (dist * n_elements * entropies[index])
-        #linearity  = (self._reward_distance(segs) * segments_linearity) * entropies[index]
-        #linearity  = ( (self.reward_neighbors(segs)*-1) * segments_linearity) * (round(entropy_level , 2) - round(entropies[index],2))
+        leniency   = (dist * n_elements * entropy_level) #entropies[index])
         linearity = self.calc_linearity(segs, n_segments, entropy_level)
-        #linearity = self.calc_linearity(segs, (round(entropy_level , 2) - round(entropies[index],2))) #segments_linearity * entropy_level)
         #print("Dist {}, MaxDist {}, NElements {}, NSegments {}({}-{}), Leniency {}, Linearity {}, Entropy {} ".format(dist, max_dist, n_elements, n_segments, segments_linearity, segments_repeated, round(leniency,2), round(linearity,2), round(entropies[index],2) ))
-        #time.sleep(1)
         return leniency, linearity, map
 
     def prepare(self):
@@ -522,6 +504,18 @@ class ExpressiveRangePlot:
         #Normalized Data
         dobjective_leniency = normalize(np.array(self.dobjective_leniency))
         dentropies_linearity = normalize(np.array(self.dentropies_linearity))       
+
+        maps_id = np.arange(0, len(dobjective_leniency))
+
+        #a = np.asarray([ maps_id, dobjective_leniency, dentropies_linearity ])
+        
+        save_file = mk_dir(path, "Expressive Range")
+        save_file = os.path.join(save_file, "{}-{}-{}-{}".format("ExpressiveRange", env_game, agent, ".csv") )
+
+        #numpy.savetxt(save_file, a, delimiter=",")
+
+        df =pd.DataFrame({'Linearity' : dentropies_linearity, 'Leniency': dobjective_leniency}) 
+        df.to_csv(save_file)
 
         save_map = False
         rewards_nei = []
