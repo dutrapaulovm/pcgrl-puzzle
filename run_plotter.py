@@ -102,8 +102,7 @@ if __name__ == "__main__":
                 #parser.add_argument("--uuid", default="-61-(3, 2)", type=str)  
                 #parser.add_argument("--uuid", default="-180-(3, 2)", type=str)                
                 parser.add_argument("--uuid", default=uuids[el], type=str)   
-                parser.add_argument("--tag", default=tag, type=str)   
-
+                parser.add_argument("--tag", default=tag, type=str)
                                 
                 args = parser.parse_args()
 

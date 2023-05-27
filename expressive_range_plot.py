@@ -126,7 +126,7 @@ class ExpressiveRangePlot:
                    dist += map[row][col]                         
                 elif tile == zelda.Enemy.ID:
                    d_enemy = map[row][col]
-                   d_enemy = (max_dist - d_enemy) * math.pi
+                   d_enemy = (max_dist - d_enemy) + 1 #* math.pi
                    dist += d_enemy                                                      
                 else:                   
                    dist += map[row][col]
@@ -220,7 +220,7 @@ class ExpressiveRangePlot:
         self.update_tiles(map_coin, [mazecoin.CoinGold.ID, mazecoin.Player.ID], 0)
         h = 0 
         map_coin, max_dist, ent, grounds = wave_front_entrace(map_coin, row_coin, col_coin, h)                       
-        map_coin[row_coin][col_coin] = 50                        
+        map_coin[row_coin][col_coin] = 50
 
         tiles = [2]        
         for tile in tiles:   

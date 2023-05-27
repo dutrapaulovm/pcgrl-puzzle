@@ -41,7 +41,7 @@ class BasePCGRLEnv(PCGRLEnv):
                 agent = None,
                 max_changes = 61,
                 reward_change_penalty = None,
-                path_models = None, callback = BasePCGRLCallback()):
+                path_models = None, extra_actions = [], callback = BasePCGRLCallback()):
         
         self.action_change  = action_change
         self.action_rotate  = action_rotate
@@ -53,6 +53,7 @@ class BasePCGRLEnv(PCGRLEnv):
         self.piece_size     = piece_size            
         self.board = board        
         self.path_models = path_models        
+        self.extra_actions = extra_actions
         super(BasePCGRLEnv, self).__init__(name = name, 
                                            seed = seed, 
                                            game = game, 
@@ -85,7 +86,8 @@ class BasePCGRLEnv(PCGRLEnv):
         self.max_segment = 6
         self.exp = agent
         self.current_piece = []
-        self.env_rewards = env_rewards       
+        self.env_rewards = env_rewards
+        
     
     def create_action_space(self):           
         path_piece = os.path.join(PCGRLPUZZLE_MAP_PATH, self.path_models)            
@@ -95,7 +97,8 @@ class BasePCGRLEnv(PCGRLEnv):
                             rep = self.representation, 
                             path_pieces = path_piece, 
                             action_change=self.action_change, 
-                            action_rotate=self.action_rotate)
+                            action_rotate=self.action_rotate,
+                            extra_actions=self.extra_actions)
 
         self.max_cols_piece = self.agent_behavior.max_cols
         self.max_rows_piece = self.agent_behavior.max_rows            
