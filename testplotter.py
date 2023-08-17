@@ -1975,8 +1975,8 @@ class PlotResults:
         
         rewards = []                
         
-        #max_entropy = 3.0
-        #entropy_min = 2.75
+        max_entropy = 3.0
+        entropy_min = 2.75
 
         max_entropy = 2.58
         entropy_min = 2.25
@@ -1985,7 +1985,7 @@ class PlotResults:
         entropies = []
         epsilon = 0.1       
         r = 0
-        entx = math.pi
+        w = math.pi
         while ent_ <= max_entropy:
 
             entropies.append(ent_)
@@ -1995,7 +1995,7 @@ class PlotResults:
             #a = math.log2(((math.pi / (e  + 0.5)) * e) + 1 )
             #b = math.log2(((math.pi / (e  + 0.5)) * entropy_min) + 1)
             #r = (a - b) * math.pi
-            r = (e**entx - entropy_min**entx) 
+            r = (e**w - entropy_min**w) 
             #r = (((e**math.pi)+1) - ((entropy_min**math.pi)+1))
             #print("\t{} : {}".format(a, b))
             f = 1
@@ -2013,13 +2013,14 @@ class PlotResults:
         """
                     
         plt.plot(entropies, rewards, color='#ff000a')                            
-        ax.axvline(entropy_min, color="k", linestyle="dashed", linewidth=2, label=r"$\mathrm{HQ} = 2,75 \rightarrow \mathcal{R} = 1,0$")        
+        ax.axvline(entropy_min, color="k", linestyle="dashed", linewidth=2, label=r"$\mathrm{HQ} = 2.25 \rightarrow R = 1,0$")        
+        #ax.axvline(entropy_min, color="k", linestyle="dashed", linewidth=2, label=r"$\mathrm{HQ} = 2.75 \rightarrow R = 1,0$")
         
 
         ax.plot([entropy_min], [1.0], 'ro', ms=8, mec='r')                        
         #ax.annotate('-2.458637729', xy=(1.80, -2.458637729), xytext=(1.90, -3.0), fontsize=12 )        
-        ax.annotate('$\mathrm{HQ} = 2,25$', xy=(entropy_min, 0), xytext=(1.75, 0.5), fontsize=12 )        
-        #ax.annotate('$\mathrm{HQ} = 2,75$', xy=(entropy_min, 0), xytext=(2.10, 0.5), fontsize=12 )        
+        ax.annotate('$\mathrm{HQ} = 2.25$', xy=(entropy_min, 0), xytext=(1.75, 0.5), fontsize=12 )        
+        #ax.annotate('$\mathrm{HQ} = 2.75$', xy=(entropy_min, 0), xytext=(2.10, 0.5), fontsize=12 )        
         
         plt.yticks([12, 10, 8, 6, 4, 2, 0, -2, -4, -6, -8, -10, -12, -14])                
         #plt.yticks([12, 10, 8, 6, 4, 2, 0, -2, -4, -6, -8, -10, -12, -14,-16,-18,-20,-22,-24,-26])                

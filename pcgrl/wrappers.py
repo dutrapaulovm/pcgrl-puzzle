@@ -149,6 +149,8 @@ class RenderMonitor(Monitor):
         assert not self.action_space is None , 'Action Space can''t be None'               
         assert not self.observation_space is None , 'Observation Space can''t be None'               
         
+
+        
         self.rank = rank
         #self.render_gui = kwargs.get('render', False)
         #self.render_rank = kwargs.get('render_rank', 0)

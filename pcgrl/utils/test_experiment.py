@@ -12,8 +12,8 @@ if __name__ == '__main__':
     gamma           = 0.99
     batch_size      = 64
     n_epochs        = 10
-    max_changes     = [180]
-    #max_changes     = [21, 61, 180]
+    #max_changes     = [180]
+    max_changes     = [21, 61, 180]
     time_steps_inference     = 1000
     entropy_min              = None
     reward_best_done_bonus   = 50
@@ -21,13 +21,13 @@ if __name__ == '__main__':
     reward_low_done_bonus    = 0
     reward_entropy_penalty   = 0
     reward_change_penalty    = -0.1
-    #boards = [(2, 3), (2, 4)]
-    boards = [(4, 6)]
+    boards = [(2, 3), (2, 4)]
+    #boards = [(4, 6)]
     #path_results = "F:\Experimentos\Results-Reward_threshold"
-    path_results = "F:\Experimentos\ResultadosPiece4x4"
+    path_results = "F:\Experimentos\ResultadosPiece8x8"
     #seeds = [42, 43, 44, 45, 46]  
-    #seeds = [42]
-    seeds = [42, 396297772, 1267813114, 1293202981, 2031146959, 2967016284]
+    seeds = [42]
+    #seeds = [42, 396297772, 1267813114, 1293202981, 2031146959, 2967016284]
     current_seed  = 0
     factor_reward = 1
     render        = False
@@ -38,10 +38,11 @@ if __name__ == '__main__':
     action_rotate = False
     env_rewards   = False
     save_level    = False
-    piece_size    = 4
+    piece_size    = 8
     is_training   = True
     is_inference  = True
     plot_results_experiments = False
+    threshold_hq  = 10
 
     #for n in range(5):
     #    seed = gen_random_number()
@@ -85,9 +86,10 @@ if __name__ == '__main__':
                 #envs = [Game.ZELDA.value]                                    
                 #envs = [Game.ZELDALOWMAPS.value]
                 #agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value]#, Experiment.AGENT_HEQHPD.value]
-                agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value]
+                #agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value]
+                agents = [Experiment.AGENT_HEQHP.value]
                 #agents = [Experiment.AGENT_SS.value, Experiment.AGENT_HHP.value, Experiment.AGENT_HEQHP.value, Experiment.AGENT_HEQHPEX.value]
-                #agents = [Experiment.AGENT_HEQHP.value]                
+                #agents = [Experiment.AGENT_HEQHP.value]
                 if is_training:
                     for a in agents:
                         for e in envs:
