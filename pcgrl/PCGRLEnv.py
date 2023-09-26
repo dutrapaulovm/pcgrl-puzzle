@@ -209,13 +209,24 @@ class PCGRLEnv(gym.Env):
         """
         return 0
 
-    def _get_done(self, actions = None):
-        """Return if the episode is over, True if over, False otherwise."""
+    def _get_done(self, actions = None) -> bool:
+        """Return if the episode is over, True if over, False otherwise.
+
+        Args:
+            actions ([type], optional): [description]. Defaults to None.
+
+        Returns:
+            bool: [description]
+        """        
+        
         return False        
 
     def close(self):
+        """Close the environment.
 
-        """Close the environment."""        
+        Raises:
+            ValueError: [description]
+        """                
         if self.game is None:
             raise ValueError('Environment has already been closed.')
 
@@ -223,7 +234,7 @@ class PCGRLEnv(gym.Env):
 
         self.game = None    
 
-    def render(self, mode='rgb_array', tick=60):        
+    def render(self, mode='rgb_array', tick=60):                
         """        
         Render the environment.
         
