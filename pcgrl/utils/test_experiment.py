@@ -24,7 +24,7 @@ if __name__ == '__main__':
     boards = [(2, 3), (2, 4)]
     #boards = [(4, 6)]
     #path_results = "F:\Experimentos\Results-Reward_threshold"
-    path_results = "F:\Experimentos\ResultadosPiece8x8"
+    path_results = "F:\Experimentos\\results-threshold"
     #seeds = [42, 43, 44, 45, 46]  
     seeds = [42]
     #seeds = [42, 396297772, 1267813114, 1293202981, 2031146959, 2967016284]
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     is_training   = True
     is_inference  = True
     plot_results_experiments = False
-    threshold_hq  = 10
+    #threshold_hq  = 10
 
     #for n in range(5):
     #    seed = gen_random_number()
@@ -55,22 +55,22 @@ if __name__ == '__main__':
         policy_kwargs = dict(
             features_extractor_class = CustomCNNV2,
             features_extractor_kwargs = dict(features_dim=512),
-        )    
-
+        )
+        
     for b in boards:
         board = b
         if board[0] == 2 and board[1] == 3:
-            rewards_threshold = {Experiment.AGENT_SS.value      : 2.3  * factor_reward, 
-                                Experiment.AGENT_HHP.value      : 2.3  * factor_reward, 
-                                Experiment.AGENT_HEQHP.value    : 7.9  * factor_reward, 
-                                Experiment.AGENT_HEQHPEX.value  : 7.9  * factor_reward, 
-                                Experiment.AGENT_HEQHPD.value   : 79.0 * factor_reward}
+            rewards_threshold = {Experiment.AGENT_SS.value       : 2.3  * factor_reward, 
+                                 Experiment.AGENT_HHP.value      : 2.3  * factor_reward, 
+                                 Experiment.AGENT_HEQHP.value    : 7.9  * factor_reward, 
+                                 Experiment.AGENT_HEQHPEX.value  : 7.9  * factor_reward, 
+                                 Experiment.AGENT_HEQHPD.value   : 79.0 * factor_reward}
         elif board[0] == 2 and board[1] == 4:
-            rewards_threshold = {Experiment.AGENT_SS.value      : 2.8  * factor_reward, 
-                                Experiment.AGENT_HHP.value      : 2.8  * factor_reward, 
-                                Experiment.AGENT_HEQHP.value    : 8.3  * factor_reward, 
-                                Experiment.AGENT_HEQHPEX.value  : 8.3  * factor_reward, 
-                                Experiment.AGENT_HEQHPD.value   : 83.0 * factor_reward}
+            rewards_threshold = {Experiment.AGENT_SS.value       : 2.8  * factor_reward, 
+                                 Experiment.AGENT_HHP.value      : 2.8  * factor_reward, 
+                                 Experiment.AGENT_HEQHP.value    : 8.3  * factor_reward, 
+                                 Experiment.AGENT_HEQHPEX.value  : 8.3  * factor_reward, 
+                                 Experiment.AGENT_HEQHPD.value   : 83.0 * factor_reward}
 
         rewards_threshold = []
         for m_changes in max_changes:

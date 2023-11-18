@@ -24,7 +24,7 @@ if __name__ == '__main__':
     learning_rate   = 3e-4
     n_steps         = 2048
     gamma           = 0.99
-    gae_lambda      = 0.95                                     
+    gae_lambda      = 0.95
     batch_size      = 64
     n_epochs        = 10
     

@@ -884,8 +884,7 @@ class ExperimentManager(object):
                                             
                         try:
                             
-                            env = DummyVecEnv([lambda :env])  
-
+                            env = DummyVecEnv([lambda :env])                            
                             #eval_callback = SaveOnBestTrainingRewardCallback(check_freq=1000,
                             #                                                log_dir=callback_log_dir, verbose=1,
                             #                                                reward_threshold=5)
@@ -902,7 +901,7 @@ class ExperimentManager(object):
                                                             eval_freq = 10000,
                                                             log_path = callback_log_dir,
                                                             best_model_save_path=callback_log_dir)
-                            else:                                
+                            else:
                                 eval_callback = EvalCallback(env,                                                             
                                                             verbose = 1,
                                                             n_eval_episodes = 5,
@@ -929,7 +928,10 @@ class ExperimentManager(object):
                             self.__save_trained_model(model = model, save_path = path_results, filename=filename_model)
                             
                             results_plotter.plot_results([path_monitors_experiments], int(self.total_timesteps), results_plotter.X_TIMESTEPS, env_name)
+                            
                             plt.savefig(path_monitors_experiments+"/Monitor.png")
+                            
+                            plt.close()                                   
                             
                             experiment_monitor.end()
                                                                                             
@@ -951,7 +953,7 @@ class ExperimentManager(object):
                             plotResults.plot_entropy(path_monitors_experiments, "Entropy-games"+_rep, title)
                                   
                             plotResults.plot_boxplot(path_monitors_experiments, "Entropy-games-boxplot"+_rep, title)                            
-                                                                                                                    
+                            
                         except KeyboardInterrupt:              
                             pass
                         finally:              

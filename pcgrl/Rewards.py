@@ -62,7 +62,7 @@ class Entropy(RewardFunction):
 
 class EntropyQuality(RewardFunction):
     
-    def __init__(self, magnitude:float = 1, threshold:float = 10, env:gym.Env = None):
+    def __init__(self, magnitude:float = 1, threshold:float = 1, env:gym.Env = None):
         """AI is creating summary for __init__
 
         Args:

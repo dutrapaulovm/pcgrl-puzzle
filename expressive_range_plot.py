@@ -201,7 +201,7 @@ class ExpressiveRangePlot:
                 pos_init = positions[0]
                 for row, col in positions:                                        
                     reward_e += (euclidean_distance(pos_init, (row, col)))
-                    #reward_e += (n_segments - manhattan_distance(pos_init, (row, col)))                    
+                    #reward_e += (n_segments - manhattan_distance(pos_init, (row, col)))
 
         return reward_e
 
