@@ -35,6 +35,7 @@ if __name__ == '__main__':
     show_logger   = False
     record_video  = False
     action_change = False
+    
     action_rotate = False
     env_rewards   = False
     save_level    = False
@@ -56,22 +57,26 @@ if __name__ == '__main__':
             features_extractor_class = CustomCNNV2,
             features_extractor_kwargs = dict(features_dim=512),
         )
-        
+    """
+    Os valores de treshold definidos abaixo para cada agente refere-se ao valor de entropia e
+    também de acordo com a função de recompensa que cada agente fornece
+    """
     for b in boards:
         board = b
         if board[0] == 2 and board[1] == 3:
-            rewards_threshold = {Experiment.AGENT_SS.value       : 2.3  * factor_reward, 
-                                 Experiment.AGENT_HHP.value      : 2.3  * factor_reward, 
-                                 Experiment.AGENT_HEQHP.value    : 7.9  * factor_reward, 
-                                 Experiment.AGENT_HEQHPEX.value  : 7.9  * factor_reward, 
-                                 Experiment.AGENT_HEQHPD.value   : 79.0 * factor_reward}
+            rewards_threshold = {Experiment.AGENT_SS.value        : 2.3  * factor_reward, 
+                                 Experiment.AGENT_HHP.value       : 2.3  * factor_reward, 
+                                 Experiment.AGENT_HEQHP.value     : 7.9  * factor_reward#, 
+                                 #Experiment.AGENT_HEQHPEX.value  : 7.9  * factor_reward, 
+                                 #Experiment.AGENT_HEQHPD.value   : 79.0 * factor_reward
+                                 }
         elif board[0] == 2 and board[1] == 4:
-            rewards_threshold = {Experiment.AGENT_SS.value       : 2.8  * factor_reward, 
-                                 Experiment.AGENT_HHP.value      : 2.8  * factor_reward, 
-                                 Experiment.AGENT_HEQHP.value    : 8.3  * factor_reward, 
-                                 Experiment.AGENT_HEQHPEX.value  : 8.3  * factor_reward, 
-                                 Experiment.AGENT_HEQHPD.value   : 83.0 * factor_reward}
-
+            rewards_threshold = {Experiment.AGENT_SS.value        : 2.8  * factor_reward, 
+                                 Experiment.AGENT_HHP.value       : 2.8  * factor_reward, 
+                                 Experiment.AGENT_HEQHP.value     : 8.3  * factor_reward#, 
+                                 #Experiment.AGENT_HEQHPEX.value  : 8.3  * factor_reward, 
+                                 #Experiment.AGENT_HEQHPD.value   : 83.0 * factor_reward
+                                 }
         rewards_threshold = []
         for m_changes in max_changes:
 

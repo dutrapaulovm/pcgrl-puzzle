@@ -67,7 +67,7 @@ class EntropyQuality(RewardFunction):
 
         Args:
             magnitude (float, optional): [description]. Defaults to 1.
-            threshold (float, optional): [description]. Defaults to 10.
+            threshold (float, optional): [description]. Defaults to 1.
             env (gym.Env, optional): [description]. Defaults to None.
         """        
         super(EntropyQuality, self).__init__(magnitude = magnitude, env = env)        
@@ -90,7 +90,7 @@ class EntropyQuality(RewardFunction):
         reward = 0
         x = math.pi
         e = entropy(self.segments)
-        r = (e**x - self.entropy_min**x)                
+        r = (e**x - self.entropy_min**x)
         f = self.threshold
         reward = (((r + sign(r)) * f)) * self.magnitude       
         return reward
@@ -127,7 +127,7 @@ class EntropyQualityEx(RewardFunction):
         reward = 0
         x = math.pi
         e = entropy(self.segments)
-        r = (e**x - self.entropy_min**x)                
+        r = (e**x - self.entropy_min**x)
         f = 1
         reward = (((r + sign(r)) * f)) * self.magnitude
 
